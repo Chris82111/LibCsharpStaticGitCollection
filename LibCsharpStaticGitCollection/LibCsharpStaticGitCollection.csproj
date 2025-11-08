@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="./Lib/MinGitLib.props" />
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -7,4 +8,28 @@
     <RootNamespace>Chris82111.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup Label="MinGitLib">
+	<MinGitExtractDir>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', 'bin', '$(Configuration)', '$(TargetFramework)', '$(MinGitExtractDirectoryName)'))</MinGitExtractDir>
+  </PropertyGroup>
+  
+  <Target Name="DownloadAndExtractLib" BeforeTargets="Build">
+    <DownloadFile
+	  SkipUnchangedFiles="true"
+      SourceUrl="$(MinGitUrl)"
+      DestinationFolder="$(MinGitZipDirectory)"
+      DestinationFileName="$(MinGitZipFileName)" >
+      <Output TaskParameter="DownloadedFile" ItemName="Content" />
+    </DownloadFile>
+	
+    <!-- Ensure extract directory exists -->	  
+    <MakeDir
+      Condition="!Exists('$(MinGitExtractDir)')"
+      Directories="$(MinGitExtractDir)" />
+
+    <Unzip
+      SourceFiles="$(MinGitZipFullFileName)"
+      DestinationFolder="$(MinGitExtractDir)"
+      SkipUnchangedFiles="true" />
+	  
+  </Target>
 </Project>
