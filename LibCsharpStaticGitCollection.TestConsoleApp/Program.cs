@@ -1,44 +1,18 @@
-﻿using System.Diagnostics;
-
-namespace LibCsharpStaticGitCollection.TestConsoleApp
+﻿namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleApp
 {
     internal class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine($"Version: {GitVersion().Result}");
-        }
+            Console.WriteLine($"Static Linux   Git path : {Local.GitCommandStaticLinux}");
+            Console.WriteLine($"Static Windows Git path : {Local.GitCommandStaticWindows}");
+            Console.WriteLine($"Static Git path         : {Local.GitCommand}");
 
-        public static async Task<string> GitVersion()
-        {
-            var psi = new ProcessStartInfo
-            {
-                //FileName = "git",
-                FileName = "./Lib/MinGit-2.51.2-64-bit/cmd/git.exe",
-                Arguments = "-v",
-                WorkingDirectory = ".",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            psi.Environment["GIT_ASKPASS"] = "echo";
-
-            var process = new Process { StartInfo = psi };
-
-            if (null == process)
-            {
-                return string.Empty;
-            }
-
-            process.Start();
-
-            //TODO: Debug
-            string output = await process.StandardOutput.ReadToEndAsync();
-
-            await process.WaitForExitAsync();
-
-            return output;            
+            Console.WriteLine($"Git       : {Local.IsProgramAvailable("git")}");
+            Console.WriteLine($"Static Git: {Local.IsProgramAvailable(Local.GitCommand)}");
+            Console.WriteLine($"Available : {Local.IsGitAvailable()}");
+            Console.WriteLine($"Version   : {Local.CallGit("-v").StandardOutput}");
+            Console.WriteLine($"Version   : {Local.GitVersion()}");
         }
     }
 }
