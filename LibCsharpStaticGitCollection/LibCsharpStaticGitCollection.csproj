@@ -13,7 +13,8 @@
   </PropertyGroup>
   
   <Target Name="DownloadAndExtractLib" BeforeTargets="Build">
-    <DownloadFile
+    <!-- Download files -->
+	<DownloadFile
 	  SkipUnchangedFiles="true"
       SourceUrl="$(MinGitUrl)"
       DestinationFolder="$(MinGitZipDirectory)"
@@ -23,13 +24,22 @@
 	
     <!-- Ensure extract directory exists -->	  
     <MakeDir
-      Condition="!Exists('$(MinGitExtractDir)')"
-      Directories="$(MinGitExtractDir)" />
-
+      Condition="!Exists('$(MinGitExtractDirectory)')"
+      Directories="$(MinGitExtractDirectory)" />
+    
+    <!-- Extract files -->	
     <Unzip
       SourceFiles="$(MinGitZipFullFileName)"
-      DestinationFolder="$(MinGitExtractDir)"
+      DestinationFolder="$(MinGitExtractDirectory)"
       SkipUnchangedFiles="true" />
-	  
+
   </Target>
+  
+  <ItemGroup>
+    <MinGitFiles Include="$(MinGitExtractDirectory)\**\*" />
+    <Content Include="@(MinGitFiles)">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
