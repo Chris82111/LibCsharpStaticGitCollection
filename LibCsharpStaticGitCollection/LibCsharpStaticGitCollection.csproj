@@ -8,31 +8,59 @@
     <RootNamespace>Chris82111.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
 
-  <PropertyGroup Label="MinGitLib">
-	<MinGitExtractDir>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', 'bin', '$(Configuration)', '$(TargetFramework)', '$(MinGitExtractDirectoryName)'))</MinGitExtractDir>
-  </PropertyGroup>
+  <Target Name="DownloadMinGitZip" BeforeTargets="Build">
   
-  <Target Name="DownloadAndExtractLib" BeforeTargets="Build">
-    <!-- Download files -->
+    <Message 
+      Condition="Exists('$(MinGitZipFullFileName)')" 
+      Text="MinGit ZIP already exists — skipping download." 
+      Importance="High" />
+    
 	<DownloadFile
+      Condition="!Exists('$(MinGitZipFullFileName)')"
 	  SkipUnchangedFiles="true"
       SourceUrl="$(MinGitUrl)"
       DestinationFolder="$(MinGitZipDirectory)"
       DestinationFileName="$(MinGitZipFileName)" >
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
+
+  </Target>
+  
+  <Target Name="VerifyMinGitZip"
+          DependsOnTargets="DownloadMinGitZip"
+          BeforeTargets="Build"
+          Condition="!Exists('$(MinGitExtractDirectory)')">
 	
+    <GetFileHash
+	  Files="$(MinGitZipFullFileName)" 
+	  Algorithm="SHA256" >
+      <Output TaskParameter="Hash" ItemName="MinGitZipHashInfo" />
+    </GetFileHash>
+
+    <!-- Extract the actual hash into a property -->
+    <PropertyGroup>
+        <MinGitActualHash>@(MinGitZipHashInfo)</MinGitActualHash>
+    </PropertyGroup>
+
+    <!-- Log the hash (optional) -->
+    <Message Text="Expected MinGit hash: $(MinGitExpectedHash)" Importance="High" />
+    <Message Text="Actual   MinGit hash: $(MinGitActualHash)" Importance="High" />
+
+    <!-- Fail build if hashes do not match -->
+    <Error 
+        Condition="'$(MinGitActualHash)' != '$(MinGitExpectedHash)'"
+        Text="ERROR: MinGit ZIP hash does not match expected SHA256 hash!" />
+		
     <!-- Ensure extract directory exists -->	  
-    <MakeDir
-      Condition="!Exists('$(MinGitExtractDirectory)')"
-      Directories="$(MinGitExtractDirectory)" />
+    <MakeDir Directories="$(MinGitExtractDirectory)" />
     
     <!-- Extract files -->	
-    <Unzip
+	<Unzip 
+      Condition="'$(MinGitActualHash)' == '$(MinGitExpectedHash)'"
       SourceFiles="$(MinGitZipFullFileName)"
       DestinationFolder="$(MinGitExtractDirectory)"
       SkipUnchangedFiles="true" />
-
+	  
   </Target>
   
   <ItemGroup>
