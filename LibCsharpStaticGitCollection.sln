@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36603.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibCsharpStaticGitCollection", "LibCsharpStaticGitCollection\LibCsharpStaticGitCollection.csproj", "{37A1B635-5169-4BCE-820A-7EC792C9FC83}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibCsharpStaticGitCollection.TestConsoleApp", "LibCsharpStaticGitCollection.TestConsoleApp\LibCsharpStaticGitCollection.TestConsoleApp.csproj", "{F9B47BFB-4F96-40CA-A242-CD0854D75823}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{37A1B635-5169-4BCE-820A-7EC792C9FC83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37A1B635-5169-4BCE-820A-7EC792C9FC83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37A1B635-5169-4BCE-820A-7EC792C9FC83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37A1B635-5169-4BCE-820A-7EC792C9FC83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9B47BFB-4F96-40CA-A242-CD0854D75823}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9B47BFB-4F96-40CA-A242-CD0854D75823}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9B47BFB-4F96-40CA-A242-CD0854D75823}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9B47BFB-4F96-40CA-A242-CD0854D75823}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D14E7E0A-853A-4D6D-9C87-3244E4040936}
+	EndGlobalSection
+EndGlobal
