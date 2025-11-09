@@ -1,9 +1,13 @@
-﻿namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleApp
+﻿using Chris82111.LibCsharpStaticGitCollection.Lib;
+
+namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleApp
 {
     internal class Program
     {
         static void Main(string[] args)
         {
+            Console.WriteLine($"Settings : {MinGitLib.MinGitrelativeOutDirectory}");
+
             Console.WriteLine($"Static Linux   Git path : {Local.GitCommandStaticLinux}");
             Console.WriteLine($"Static Windows Git path : {Local.GitCommandStaticWindows}");
             Console.WriteLine($"Static Git path         : {Local.GitCommand}");

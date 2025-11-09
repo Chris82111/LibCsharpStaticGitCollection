@@ -1,4 +1,5 @@
 ﻿using Chris82111.LibCsharpStaticGitCollection.Dtos;
+using Chris82111.LibCsharpStaticGitCollection.Lib;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -12,7 +13,7 @@ namespace Chris82111.LibCsharpStaticGitCollection
         // https://github.com/git-for-windows/git/releases/tag/v2.51.2.windows.1
         private static string? GitCommandStaticWindowsInit()
         {
-            var fileInfo = new FileInfo(@"./Lib/MinGit-2.51.2-64-bit/cmd/git.exe");
+            var fileInfo = new FileInfo(Path.Combine(MinGitLib.MinGitrelativeOutDirectory, "cmd", "git.exe"));
             if (fileInfo.Exists)
             {
                 return fileInfo.FullName;
