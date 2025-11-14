@@ -1,0 +1,8 @@
+<Project>
+
+  <Target Name="StaticGitBuild" BeforeTargets="Build">
+    <Message Text="Running Docker using: $(DockerCmd)" Importance="high" />
+    <Exec Command="$(DockerCmd) run hello-world" />
+  </Target>
+  
+</Project>

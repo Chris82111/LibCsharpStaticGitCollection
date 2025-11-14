@@ -9,8 +9,10 @@
 
   <!-- PROPS first -->
   <Import Project="./Lib/MinGitLib.props" />
+  <Import Project="./Lib/StaticGitBuild.props" />
 
   <!-- TARGETS last -->
   <Import Project="./Lib/MinGitLib.targets" />
+  <Import Project="./Lib/StaticGitBuild.targets" />
   
 </Project>

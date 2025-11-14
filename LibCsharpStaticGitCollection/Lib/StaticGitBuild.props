@@ -1,0 +1,8 @@
+<Project>
+
+  <PropertyGroup Label="StaticGitBuild">
+    <DockerCmd Condition="'$(OS)' == 'Windows_NT'">wsl docker</DockerCmd>
+    <DockerCmd Condition="'$(OS)' != 'Windows_NT'">docker</DockerCmd>
+  </PropertyGroup>
+  
+</Project>
