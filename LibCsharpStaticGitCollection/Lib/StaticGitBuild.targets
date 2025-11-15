@@ -10,8 +10,8 @@
           Condition="Exists('$(StaticGitBuildDirectory)')">
     
     <Message
-	  Text="StaticGit, Docker skipped because directory already exists." 
-	  Importance="high" />
+      Text="StaticGit, Docker skipped because directory already exists." 
+      Importance="high" />
   
   </Target>
   

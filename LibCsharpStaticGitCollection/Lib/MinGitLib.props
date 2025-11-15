@@ -22,7 +22,7 @@
     
     <!-- Lib\MinGit-2.51.2-64-bit -->
     <MinGitRelativeOutDirectory>$([System.String]::Copy('$(MinGitExtractDirectory)').Replace('$(MSBuildProjectDirectory)', '').TrimStart('\'))</MinGitRelativeOutDirectory>
-	
+    
   </PropertyGroup>
   
 </Project>
