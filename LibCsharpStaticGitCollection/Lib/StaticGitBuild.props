@@ -1,8 +1,21 @@
 <Project>
-
   <PropertyGroup Label="StaticGitBuild">
+  
+    <!-- C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection\Lib -->
+    <StaticGitDirectory>$(MSBuildThisFileDirectory.TrimEnd('\').TrimEnd('/'))</StaticGitDirectory>
+	
+	<StaticGitBuildDirectoryName>git-static</StaticGitBuildDirectoryName>
+	
+	<!-- C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection\Lib\git-static -->
+    <StaticGitBuildDirectory>$([System.IO.Path]::Combine('$(StaticGitDirectory)', '$(StaticGitBuildDirectoryName)'))</StaticGitBuildDirectory>
+	
+	<StaticGitBuildDockerDirectory>/opt/musl/git</StaticGitBuildDockerDirectory>
+	
     <DockerCmd Condition="'$(OS)' == 'Windows_NT'">wsl docker</DockerCmd>
     <DockerCmd Condition="'$(OS)' != 'Windows_NT'">docker</DockerCmd>
+	
+    <!-- Lib\git-static -->
+    <StaticGitRelativeOutDirectory>$([System.String]::Copy('$(StaticGitBuildDirectory)').Replace('$(MSBuildProjectDirectory)', '').TrimStart('\'))</StaticGitRelativeOutDirectory>
+	
   </PropertyGroup>
-  
 </Project>

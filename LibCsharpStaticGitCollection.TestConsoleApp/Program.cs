@@ -6,17 +6,39 @@ namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleApp
     {
         static void Main(string[] args)
         {
-            Console.WriteLine($"Settings : {MinGitLib.MinGitrelativeOutDirectory}");
+            var color = "\x1b[1;49;33m";
+            var reset = "\x1b[0m";
+            Console.WriteLine($"{color}Static Linux   Git path {reset}: {Local.GitCommandStaticLinux}");
+            Console.WriteLine($"{color}Static Windows Git path {reset}: {Local.GitCommandStaticWindows}");
+            Console.WriteLine($"{color}Static Git path         {reset}: {Local.GitCommand}");
 
-            Console.WriteLine($"Static Linux   Git path : {Local.GitCommandStaticLinux}");
-            Console.WriteLine($"Static Windows Git path : {Local.GitCommandStaticWindows}");
-            Console.WriteLine($"Static Git path         : {Local.GitCommand}");
+            Console.WriteLine($"{color}Git                {reset}: {Local.IsProgramAvailable("git")}");
+            Console.WriteLine($"{color}Static Git         {reset}: {Local.IsProgramAvailable(Local.GitCommand)}");
+            Console.WriteLine($"{color}Static Git Linux   {reset}: {Local.IsProgramAvailable(Local.GitCommandStaticLinux)}");
+            Console.WriteLine($"{color}Static Git Windows {reset}: {Local.IsProgramAvailable(Local.GitCommandStaticWindows)}");
 
-            Console.WriteLine($"Git       : {Local.IsProgramAvailable("git")}");
-            Console.WriteLine($"Static Git: {Local.IsProgramAvailable(Local.GitCommand)}");
-            Console.WriteLine($"Available : {Local.IsGitAvailable()}");
-            Console.WriteLine($"Version   : {Local.CallGit("-v").StandardOutput}");
-            Console.WriteLine($"Version   : {Local.GitVersion()}");
+            // Local.GitCommand default
+            Console.WriteLine($"{color}Version   {reset}: {Local.GitVersion()}");
+            Console.WriteLine($"{color}Available {reset}: {Local.IsGitAvailable()}");
+            Console.WriteLine($"{color}Version   {reset}: {Local.CallGit("-v").StandardOutput}");
+
+            try
+            {
+                Local.GitCommand = Local.GitCommandStaticWindows;
+                Console.WriteLine($"{color}Version   {reset}: {Local.GitVersion()}");
+                Console.WriteLine($"{color}Available {reset}: {Local.IsGitAvailable()}");
+                Console.WriteLine($"{color}Version   {reset}: {Local.CallGit("-v").StandardOutput}");
+            }
+            catch { ; }
+
+            try
+            {
+                Local.GitCommand = Local.GitCommandStaticLinux;
+                Console.WriteLine($"{color}Version   {reset}: {Local.GitVersion()}");
+                Console.WriteLine($"{color}Available {reset}: {Local.IsGitAvailable()}");
+                Console.WriteLine($"{color}Version   {reset}: {Local.CallGit("-v").StandardOutput}");
+            }
+            catch { ; }
         }
     }
 }

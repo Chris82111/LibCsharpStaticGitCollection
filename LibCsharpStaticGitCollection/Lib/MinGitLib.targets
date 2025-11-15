@@ -79,7 +79,7 @@ namespace Chris82111.LibCsharpStaticGitCollection.Lib
     {
         public const string MinGitUrl = @"$(MinGitUrl)"%3B
         public const string MinGitExpectedHash = "$(MinGitExpectedHash)"%3B
-        public const string MinGitrelativeOutDirectory = @"$(MinGitrelativeOutDirectory)"%3B
+        public const string MinGitRelativeOutDirectory = @"$(MinGitRelativeOutDirectory)"%3B
     }
 }
 ' />

@@ -13,7 +13,7 @@ namespace Chris82111.LibCsharpStaticGitCollection
         // https://github.com/git-for-windows/git/releases/tag/v2.51.2.windows.1
         private static string? GitCommandStaticWindowsInit()
         {
-            var fileInfo = new FileInfo(Path.Combine(MinGitLib.MinGitrelativeOutDirectory, "cmd", "git.exe"));
+            var fileInfo = new FileInfo(Path.Combine(MinGitLib.MinGitRelativeOutDirectory, "cmd", "git.exe"));
             if (fileInfo.Exists)
             {
                 return fileInfo.FullName;
@@ -21,11 +21,15 @@ namespace Chris82111.LibCsharpStaticGitCollection
             return null;
         }
 
-#warning Linux static git command is currently not available
         public static string? GitCommandStaticLinux { get; } = GitCommandStaticLinuxInit();
 
         private static string? GitCommandStaticLinuxInit()
         {
+            var fileInfo = new FileInfo(Path.Combine(StaticGitLib.StaticGitRelativeOutDirectory, "bin", "git"));
+            if (fileInfo.Exists)
+            {
+                return fileInfo.FullName;
+            }
             return null;
         }
 

@@ -1,11 +1,12 @@
 <Project>
+  
   <PropertyGroup Label="MinGitLib">
   
     <MinGitUrl>https://github.com/git-for-windows/git/releases/download/v2.51.2.windows.1/MinGit-2.51.2-64-bit.zip</MinGitUrl>
     <MinGitExpectedHash>8f0a7bc389c0bccc9daf6107cff4efb176348e34b8d787f02a36679a5588e072</MinGitExpectedHash>
     
     <!-- C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection\Lib -->
-    <MinGitZipDirectory>$(MSBuildThisFileDirectory)</MinGitZipDirectory>
+    <MinGitZipDirectory>$(MSBuildThisFileDirectory.TrimEnd('\'))</MinGitZipDirectory>
     
     <!-- MinGit-2.51.2-64-bit.zip -->
     <MinGitZipFileName>$([System.IO.Path]::GetFileName('$(MinGitUrl)'))</MinGitZipFileName>
@@ -20,7 +21,8 @@
       <MinGitExtractDirectory>$([System.IO.Path]::Combine('$(MinGitZipDirectory)', '$(MinGitExtractDirectoryName)'))</MinGitExtractDirectory>
     
     <!-- Lib\MinGit-2.51.2-64-bit -->
-    <MinGitrelativeOutDirectory>$([System.String]::Copy('$(MinGitExtractDirectory)').Replace('$(MSBuildProjectDirectory)', '').TrimStart('\'))</MinGitrelativeOutDirectory>
+    <MinGitRelativeOutDirectory>$([System.String]::Copy('$(MinGitExtractDirectory)').Replace('$(MSBuildProjectDirectory)', '').TrimStart('\'))</MinGitRelativeOutDirectory>
 	
   </PropertyGroup>
+  
 </Project>
