@@ -4,18 +4,31 @@
     <!-- C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection\Lib -->
     <StaticGitDirectory>$(MSBuildThisFileDirectory.TrimEnd('\').TrimEnd('/'))</StaticGitDirectory>
   
+    <!-- git-static.tar.gz -->
+    <StaticGitZipFileName>git-static.tar.gz</StaticGitZipFileName>
+    
+    <!-- /build/git-static.tar.gz -->
+    <StaticGitBuildZipFullFileName>/build/git-static.tar.gz</StaticGitBuildZipFullFileName>
+  
+    <!-- C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection\Lib\git-static.tar.gz -->
+    <StaticGitZipFullFileName>$([System.IO.Path]::Combine('$(StaticGitDirectory)', '$(StaticGitZipFileName)'))</StaticGitZipFullFileName>
+  
+    <!-- git-static -->
     <StaticGitBuildDirectoryName>git-static</StaticGitBuildDirectoryName>
   
     <!-- C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection\Lib\git-static -->
     <StaticGitBuildDirectory>$([System.IO.Path]::Combine('$(StaticGitDirectory)', '$(StaticGitBuildDirectoryName)'))</StaticGitBuildDirectory>
   
+    <!-- /opt/musl/git -->
     <StaticGitBuildDockerDirectory>/opt/musl/git</StaticGitBuildDockerDirectory>
-  
-    <DockerCmd Condition="'$(OS)' == 'Windows_NT'">wsl docker</DockerCmd>
-    <DockerCmd Condition="'$(OS)' != 'Windows_NT'">docker</DockerCmd>
   
     <!-- Lib\git-static -->
     <StaticGitRelativeOutDirectory>$([System.String]::Copy('$(StaticGitBuildDirectory)').Replace('$(MSBuildProjectDirectory)', '').TrimStart('\'))</StaticGitRelativeOutDirectory>
+    
+    <DockerCmd Condition="'$(OS)' == 'Windows_NT'">wsl docker</DockerCmd>
+    <DockerCmd Condition="'$(OS)' != 'Windows_NT'">docker</DockerCmd>
+    <TarCmd Condition="'$(OS)' == 'Windows_NT'">wsl tar</TarCmd>
+    <TarCmd Condition="'$(OS)' != 'Windows_NT'">tar</TarCmd>
   
   </PropertyGroup>
 </Project>

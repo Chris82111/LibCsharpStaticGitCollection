@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 FROM ubuntu:24.04
 
-# Build
+# Build (optional `--no-cache`)
 # docker build --progress=plain -t tempimage .
 
 # Debug
@@ -16,8 +16,16 @@ FROM ubuntu:24.04
 # docker rmi tempimage
 # docker system prune -f
 
+# sudo
+# sudo ln -s <your-path>/git-static /opt/musl/git
 
-#--no-cache
+# normal user
+# export PATH="<your-path>/git-static/bin:$PATH"
+# export GIT_PREFIX="<your-path>/git-static"
+# export GIT_EXEC_PATH="<your-path>/git-static/libexec/git-core"
+# export GIT_TEMPLATE_DIR="<your-path>/git-static/share/git-core/templates/"
+
+# ./git clone https://github.com/Chris82111/lib-c-median
 
 RUN apt -y update && apt install -y \
   build-essential \
@@ -140,7 +148,7 @@ RUN ./configure --prefix=/opt/musl/curl \
             --with-libpsl=/opt/musl/libpsl \
             --disable-ldap \
             --disable-ldap-sasl
-			
+            
 RUN make CC=musl-gcc
 RUN make install
 
@@ -181,12 +189,14 @@ RUN ./configure \
   NO_TCLTK=YesPlease
 
 RUN make \
+    NO_INSTALL_HARDLINKS=YesPlease \
     CC=musl-gcc \
     CFLAGS="-static" \
     LDFLAGS="-static -L/opt/musl/curl/lib -L/opt/musl/libpsl/lib -L/opt/musl/zlib/lib -L/build/openssl-3.5.4" \
     EXTLIBS="-lpsl -lcurl -lssl -lcrypto -lz -lpthread -ldl"
 
 RUN make install \
+    NO_INSTALL_HARDLINKS=YesPlease \
     prefix=/opt/musl/git \
     CC=musl-gcc \
     CFLAGS="-static" \
@@ -198,5 +208,11 @@ RUN \
   if ldd /opt/musl/git/bin/git >/dev/null 2>&1; then \
     echo "ERROR: git is dynamically linked"; exit 1; \
   fi
+
+# WORKDIR /opt/musl/git
+# RUN find . -type f -perm -111 -exec sh -c 'file "$0" | grep -q ELF && strip "$0"' {} \;
+
+WORKDIR /build
+RUN tar -czvf git-static.tar.gz -C /opt/musl/git .
 
 CMD ["echo", "Done"]

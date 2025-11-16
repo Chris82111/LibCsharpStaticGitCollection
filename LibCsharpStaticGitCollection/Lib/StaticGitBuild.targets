@@ -7,7 +7,7 @@
   </ItemGroup>
   
   <Target Name="StaticGitBuildSkipped" BeforeTargets="Build"
-          Condition="Exists('$(StaticGitBuildDirectory)')">
+          Condition="Exists('$(StaticGitZipFullFileName)')">
     
     <Message
       Text="StaticGit, Docker skipped because directory already exists." 
@@ -16,27 +16,57 @@
   </Target>
   
   <Target Name="StaticGitBuild" BeforeTargets="Build"
-          Condition="!Exists('$(StaticGitBuildDirectory)')">
-    
-    <Message Text="Running Docker using: $(DockerCmd)" Importance="high" />
+    Condition="!Exists('$(StaticGitZipFullFileName)')" >
   
+    <Message Text="Running Docker using: $(DockerCmd)" Importance="high" />
+    
     <!-- Build Docker image -->
     <Exec
       Command="$(DockerCmd) build --progress=plain -t staticgitbuildtempimage ."
       WorkingDirectory="$(StaticGitDirectory)"  />
     
     <!-- Export files from the Docker image -->
-    <Exec
-      Command="$(DockerCmd) rm staticgitbuildexporttemp" 
-      IgnoreExitCode="true" />
-    <Exec Command="$(DockerCmd) create --name staticgitbuildexporttemp staticgitbuildtempimage" WorkingDirectory="$(StaticGitDirectory)" />
-    <Exec Command="$(DockerCmd) cp staticgitbuildexporttemp:$(StaticGitBuildDockerDirectory) ./$(StaticGitBuildDirectoryName)" WorkingDirectory="$(StaticGitDirectory)" />
-    <Exec Command="$(DockerCmd) rm staticgitbuildexporttemp" />
+      <!-- Small cleanup -->
+      <Exec Command="$(DockerCmd) rm staticgitbuildexporttemp" IgnoreExitCode="true" />
+      <!-- Create image -->
+      <Exec Command="$(DockerCmd) create --name staticgitbuildexporttemp staticgitbuildtempimage" WorkingDirectory="$(StaticGitDirectory)" />
+      <!-- Copy zip -->
+      <Exec Command="$(DockerCmd) cp staticgitbuildexporttemp:$(StaticGitBuildZipFullFileName) ./" WorkingDirectory="$(StaticGitDirectory)" />
+      <!-- Copy files directly -->
+      <Exec Command="$(DockerCmd) cp staticgitbuildexporttemp:$(StaticGitBuildDockerDirectory) ./$(StaticGitBuildDirectoryName)" WorkingDirectory="$(StaticGitDirectory)" />
+      <!-- Small cleanup -->
+      <Exec Command="$(DockerCmd) rm staticgitbuildexporttemp" />
     
     <!-- Cleanup -->
     <!--Exec Command="$(DockerCmd) rmi staticgitbuildtempimage" / -->
     <!--Exec Command="$(DockerCmd) system prune -f" / -->
   
+  </Target>
+  
+  
+  <Target Name="StaticGitUnzipSkipped" BeforeTargets="Build"
+          Condition="Exists('$(StaticGitBuildDirectory)')">
+    
+    <Message
+      Text="StaticGit, unzip skipped because directory already exists." 
+      Importance="high" />
+  
+  </Target>
+  
+  <Target Name="StaticGitUnzip" BeforeTargets="Build"
+    Condition="!Exists('$(StaticGitBuildDirectory)')" >
+  
+    <Message Text="Unzip" Importance="high" />
+    
+    <MakeDir Directories="$(StaticGitBuildDirectory)" />
+    
+    <Message Text="Unzip: ./$(StaticGitZipFileName)" Importance="high" />
+    <Message Text="Unzip: ./$(StaticGitBuildDirectoryName)" Importance="high" />
+    
+    <Exec
+      Command="$(TarCmd) -xzf &quot;./$(StaticGitZipFileName)&quot; -C &quot;./$(StaticGitBuildDirectoryName)&quot;"
+      WorkingDirectory="$(StaticGitDirectory)" />
+    
   </Target>
   
   <Target Name="GenerateStaticGitPath" BeforeTargets="BeforeCompile">
