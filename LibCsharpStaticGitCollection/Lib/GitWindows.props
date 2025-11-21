@@ -1,0 +1,48 @@
+<Project>
+  
+  <PropertyGroup Label="GitWindows" >
+    
+    <!-- Download URL -->
+    <GitWindowsUrl>https://github.com/git-for-windows/git/releases/download/v2.51.2.windows.1/MinGit-2.51.2-64-bit.zip</GitWindowsUrl>
+    
+    <!-- Zip 256 hash -->  
+    <GitWindowsExpectedHash>8f0a7bc389c0bccc9daf6107cff4efb176348e34b8d787f02a36679a5588e072</GitWindowsExpectedHash>
+    
+    <!-- MinGit-2.51.2-64-bit.zip -->
+    <GitWindowsZipFile>$([System.IO.Path]::GetFileName('$(GitWindowsUrl)'))</GitWindowsZipFile>
+  
+  </PropertyGroup>
+  
+  <PropertyGroup Label="GitWindowsHelper" >
+    
+    <!-- C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection\Lib -->
+    <GitWindowsLibDirectory>$(MSBuildThisFileDirectory.TrimEnd('/').TrimEnd('\'))</GitWindowsLibDirectory>
+    
+    <!-- C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection\Lib\MinGit-2.51.2-64-bit.zip -->
+    <GitWindowsZipFileFull>$([System.IO.Path]::Combine('$(GitWindowsLibDirectory)', '$(GitWindowsZipFile)'))</GitWindowsZipFileFull>
+    
+    <!-- MinGit-2.51.2-64-bit.zip-unchecked -->
+    <GitWindowsZipFileUnchecked>'$(GitWindowsZipFile)-unchecked'))</GitWindowsZipFileUnchecked>
+    
+    <!-- C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection\Lib\MinGit-2.51.2-64-bit.zip-unchecked -->
+    <GitWindowsZipFileUncheckedFull>$([System.IO.Path]::Combine('$(GitWindowsLibDirectory)', '$(GitWindowsZipFileUnchecked)'))</GitWindowsZipFileUncheckedFull>
+    
+    <!-- MinGit-2.51.2-64-bit -->
+    <GitWindowsBaseName>$([System.IO.Path]::GetFileNameWithoutExtension('$(GitWindowsZipFile)'))</GitWindowsBaseName>
+  
+  </PropertyGroup>
+  
+  <PropertyGroup Label="GitWindowsRelativeOutput" >
+    
+    <!-- Lib -->
+    <GitWindowsRelativeOutputDirectory>$([System.String]::Copy('$(GitWindowsLibDirectory)').Replace('$(MSBuildProjectDirectory)', '').TrimEnd('/').TrimEnd('\'))</GitWindowsRelativeOutputDirectory>
+    
+    <!-- Lib\MinGit-2.51.2-64-bit.zip -->
+    <GitWindowsRelativeOutputZipFile>$([System.IO.Path]::Combine('$(GitWindowsRelativeOutputDirectory)', '$(GitWindowsZipFile)'))</GitWindowsRelativeOutputZipFile>
+    
+    <!-- Lib\MinGit-2.51.2-64-bit -->
+    <GitWindowsRelativeOutputZipDirectory>$([System.IO.Path]::Combine('$(GitWindowsRelativeOutputDirectory)', '$(GitWindowsBaseName)'))</GitWindowsRelativeOutputZipDirectory>
+  
+  </PropertyGroup>
+
+</Project>

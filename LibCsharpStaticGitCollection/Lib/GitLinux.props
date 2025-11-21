@@ -1,0 +1,46 @@
+<Project>
+  
+  <PropertyGroup Label="GitLinux" >
+    
+    <!-- GitLinux.tar.gz -->
+    <GitLinuxZipFile>GitLinux.tar.gz</GitLinuxZipFile>
+  
+  </PropertyGroup>
+  
+  <PropertyGroup Label="GitLinuxDockerInternal" >
+    
+    <!-- /build/GitLinux.tar.gz -->
+    <GitLinuxDockerInternalZipFileFull>/build/GitLinux.tar.gz</GitLinuxDockerInternalZipFileFull>
+  
+  </PropertyGroup>
+  
+  <PropertyGroup Label="GitLinuxHelper" >
+    
+    <!-- C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection\Lib -->
+    <GitLinuxLibDirectory>$(MSBuildThisFileDirectory.TrimEnd('/').TrimEnd('\'))</GitLinuxLibDirectory>
+    
+    <!-- C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection\Lib\GitLinux.tar.gz -->
+    <GitLinuxZipFileFull>$([System.IO.Path]::Combine('$(GitLinuxLibDirectory)', '$(GitLinuxZipFile)'))</GitLinuxZipFileFull>
+    
+    <!-- GitLinux -->
+    <GitLinuxBaseName>$(GitLinuxZipFile.Replace('.tar.gz',''))</GitLinuxBaseName>
+    
+    <DockerCmd Condition="'$(OS)' == 'Windows_NT'">wsl docker</DockerCmd>
+    <DockerCmd Condition="'$(OS)' != 'Windows_NT'">docker</DockerCmd>
+  
+  </PropertyGroup>
+  
+  <PropertyGroup Label="GitLinuxRelativeOutput" >
+    
+    <!-- Lib -->
+    <GitLinuxRelativeOutputDirectory>$([System.String]::Copy('$(GitLinuxLibDirectory)').Replace('$(MSBuildProjectDirectory)', '').TrimEnd('/').TrimEnd('\'))</GitLinuxRelativeOutputDirectory>
+    
+    <!-- Lib\GitLinux.tar.gz -->
+    <GitLinuxRelativeOutputZipFile>$([System.IO.Path]::Combine('$(GitLinuxRelativeOutputDirectory)', '$(GitLinuxZipFile)'))</GitLinuxRelativeOutputZipFile>
+    
+    <!-- Lib\GitLinux -->
+    <GitLinuxRelativeOutputZipDirectory>$([System.IO.Path]::Combine('$(GitLinuxRelativeOutputDirectory)', '$(GitLinuxBaseName)'))</GitLinuxRelativeOutputZipDirectory>
+  
+  </PropertyGroup>
+
+</Project>

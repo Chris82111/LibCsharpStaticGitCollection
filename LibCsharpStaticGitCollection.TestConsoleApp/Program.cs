@@ -6,6 +6,10 @@ namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleApp
     {
         static void Main(string[] args)
         {
+            string zipPath = @"./Lib/MinGit-2.51.2-64-bit.zip";
+            string extractPath = @"./Lib/MinGit-2.51.2-64-bit";
+            System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, extractPath);
+
             var color = "\x1b[1;49;33m";
             var reset = "\x1b[0m";
             Console.WriteLine($"{color}Static Linux   Git path {reset}: {Local.GitCommandStaticLinux}");

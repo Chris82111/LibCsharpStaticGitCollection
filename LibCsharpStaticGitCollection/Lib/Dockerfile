@@ -213,6 +213,6 @@ RUN \
 # RUN find . -type f -perm -111 -exec sh -c 'file "$0" | grep -q ELF && strip "$0"' {} \;
 
 WORKDIR /build
-RUN tar -czvf git-static.tar.gz -C /opt/musl/git .
+RUN tar -czvf GitLinux.tar.gz -C /opt/musl/git .
 
 CMD ["echo", "Done"]
