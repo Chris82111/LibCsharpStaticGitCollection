@@ -24,6 +24,9 @@ The individual versions of Git for Linux can be specified in the [Dockerfile](Li
 Docker is required for the build process; WSL is also required on Windows.
 The build process takes approximately 9 minutes and 15 seconds.
 
+`dotnet build /p:Configuration=Debug`
+`dotnet build /p:Configuration=Release`
+
 ### Docker
 
 The entire build process requires many prerequisites. To always provide the same build environment and avoid complications with the host operating system, the build is performed in a container. For this reason, Docker is required to create the static Git for Linux.

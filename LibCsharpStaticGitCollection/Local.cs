@@ -7,17 +7,43 @@ namespace Chris82111.LibCsharpStaticGitCollection
 {
     public static class Local
     {
+        public static void ExtractArchives()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                if (false == Directory.Exists(GitWindowsLib.GitWindowsRelativeOutputZipDirectory))
+                {
+                    System.IO.Compression.ZipFile.ExtractToDirectory(
+                        GitWindowsLib.GitWindowsRelativeOutputZipFile, 
+                        GitWindowsLib.GitWindowsRelativeOutputZipDirectory);
+		        }
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                if (false == Directory.Exists(Path.GetFullPath(GitLinuxLib.GitLinuxRelativeOutputZipDirectory)))
+                {
+                    System.Formats.Tar.TarFile.
+                    ExtractToDirectoryAsync(
+                        GitLinuxLib.GitLinuxRelativeOutputZipFile,
+                        GitLinuxLib.GitLinuxRelativeOutputZipDirectory, 
+                        overwriteFiles: false);
+                }
+            }
+
+            return;
+        }
+
 #warning Description
         public static string? GitCommandStaticWindows { get; } = GitCommandStaticWindowsInit();
 
-        // https://github.com/git-for-windows/git/releases/tag/v2.51.2.windows.1
         private static string? GitCommandStaticWindowsInit()
         {
-            //var fileInfo = new FileInfo(Path.Combine(GitWindowsLib.MinGitRelativeOutDirectory, "cmd", "git.exe"));
-            //if (fileInfo.Exists)
-            //{
-            //    return fileInfo.FullName;
-            //}
+            var fileInfo = new FileInfo(GitWindowsLib.GitWindowsRelativeOutputExecutable);
+            if (fileInfo.Exists)
+            {
+                return fileInfo.FullName;
+            }
             return null;
         }
 
@@ -25,11 +51,11 @@ namespace Chris82111.LibCsharpStaticGitCollection
 
         private static string? GitCommandStaticLinuxInit()
         {
-            //var fileInfo = new FileInfo(Path.Combine(GitLinux.StaticGitRelativeOutDirectory, "bin", "git"));
-            //if (fileInfo.Exists)
-            //{
-            //    return fileInfo.FullName;
-            //}
+            var fileInfo = new FileInfo(GitLinuxLib.GitLinuxRelativeOutputExecutable);
+            if (fileInfo.Exists)
+            {
+                return fileInfo.FullName;
+            }
             return null;
         }
 
@@ -52,8 +78,13 @@ namespace Chris82111.LibCsharpStaticGitCollection
 
         private static readonly string WhitchCommand = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "where" : "which";
 
-        public static bool IsProgramAvailable(string programName)
+        public static bool IsProgramAvailable(string? programName)
         {
+            if (string.IsNullOrEmpty(programName))
+            {
+                return false;
+            }
+
             if (File.Exists(programName))
             {
                 return true;
@@ -203,7 +234,7 @@ namespace Chris82111.LibCsharpStaticGitCollection
 
         public static string GitVersion()
         {
-            return CallGit("-v").StandardOutput;
+            return CallGit("-v").StandardOutput.Replace("\r", null).Replace("\n", null);
         }
 
         public static async Task<string> GitVersionAsync()
