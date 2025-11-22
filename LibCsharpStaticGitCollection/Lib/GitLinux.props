@@ -4,6 +4,12 @@
     
     <!-- GitLinux.tar.gz -->
     <GitLinuxZipFile>GitLinux.tar.gz</GitLinuxZipFile>
+    
+    <!-- bin -->
+    <GitLinuxExtractDirectory>bin</GitLinuxExtractDirectory>
+    
+    <!-- bin/git -->
+    <GitLinuxZipRelativeExecutable>$([System.IO.Path]::Combine('bin', 'git'))</GitLinuxZipRelativeExecutable>
   
   </PropertyGroup>
   
@@ -16,10 +22,10 @@
   
   <PropertyGroup Label="GitLinuxHelper" >
     
-    <!-- C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection\Lib -->
+    <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib -->
     <GitLinuxLibDirectory>$(MSBuildThisFileDirectory.TrimEnd('/').TrimEnd('\'))</GitLinuxLibDirectory>
     
-    <!-- C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection\Lib\GitLinux.tar.gz -->
+    <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib/GitLinux.tar.gz -->
     <GitLinuxZipFileFull>$([System.IO.Path]::Combine('$(GitLinuxLibDirectory)', '$(GitLinuxZipFile)'))</GitLinuxZipFileFull>
     
     <!-- GitLinux -->
@@ -33,13 +39,16 @@
   <PropertyGroup Label="GitLinuxRelativeOutput" >
     
     <!-- Lib -->
-    <GitLinuxRelativeOutputDirectory>$([System.String]::Copy('$(GitLinuxLibDirectory)').Replace('$(MSBuildProjectDirectory)', '').TrimEnd('/').TrimEnd('\'))</GitLinuxRelativeOutputDirectory>
+    <GitLinuxRelativeOutputDirectory>$([System.String]::Copy('$(GitLinuxLibDirectory)').Replace('$(MSBuildProjectDirectory)', '').Trim('/').Trim('\'))</GitLinuxRelativeOutputDirectory>
     
-    <!-- Lib\GitLinux.tar.gz -->
+    <!-- Lib/GitLinux.tar.gz -->
     <GitLinuxRelativeOutputZipFile>$([System.IO.Path]::Combine('$(GitLinuxRelativeOutputDirectory)', '$(GitLinuxZipFile)'))</GitLinuxRelativeOutputZipFile>
     
-    <!-- Lib\GitLinux -->
-    <GitLinuxRelativeOutputZipDirectory>$([System.IO.Path]::Combine('$(GitLinuxRelativeOutputDirectory)', '$(GitLinuxBaseName)'))</GitLinuxRelativeOutputZipDirectory>
+    <!-- bin/GitLinux -->
+    <GitLinuxRelativeOutputZipDirectory>$([System.IO.Path]::Combine('$(GitLinuxExtractDirectory)', '$(GitLinuxBaseName)'))</GitLinuxRelativeOutputZipDirectory>
+    
+    <!-- bin/GitLinux/bin/git -->
+    <GitLinuxRelativeOutputExecutable>$([System.IO.Path]::Combine('$(GitLinuxRelativeOutputZipDirectory)', '$(GitLinuxZipRelativeExecutable)'))</GitLinuxRelativeOutputExecutable>
   
   </PropertyGroup>
 
