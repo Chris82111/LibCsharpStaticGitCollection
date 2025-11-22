@@ -62,12 +62,12 @@ namespace Chris82111.LibCsharpStaticGitCollection.Lib
 {
     public static class GitWindowsLib
     {
-        public static string GitWindowsUrl = @"$(GitWindowsUrl)"%3B
-        public static string GitWindowsExpectedHash = "$(GitWindowsExpectedHash)"%3B
-        public static string GitWindowsRelativeOutputDirectory = @"$(GitWindowsRelativeOutputDirectory.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
-        public static string GitWindowsRelativeOutputZipFile = @"$(GitWindowsRelativeOutputZipFile.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
-        public static string GitWindowsRelativeOutputZipDirectory = @"$(GitWindowsRelativeOutputZipDirectory.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
-        public static string GitWindowsRelativeOutputExecutable = @"$(GitWindowsRelativeOutputExecutable.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
+        public const string GitWindowsUrl = @"$(GitWindowsUrl)"%3B
+        public const string GitWindowsExpectedHash = "$(GitWindowsExpectedHash)"%3B
+        public const string GitWindowsRelativeOutputDirectory = @"$(GitWindowsRelativeOutputDirectory.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
+        public const string GitWindowsRelativeOutputZipFile = @"$(GitWindowsRelativeOutputZipFile.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
+        public const string GitWindowsRelativeOutputZipDirectory = @"$(GitWindowsRelativeOutputZipDirectory.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
+        public const string GitWindowsRelativeOutputExecutable = @"$(GitWindowsRelativeOutputExecutable.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
     }
 }
 ' />
