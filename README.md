@@ -3,12 +3,14 @@
 <div align="center">
 
   [![Shields](https://img.shields.io/badge/.NET-8.0-5C2D91)](https://dotnet.microsoft.com/en-us/download/dotnet/8.0 "Download .NET 8.0")
-  [![Visual Studio](https://img.shields.io/badge/Visual_Studio-5C2D91)](https://visualstudio.microsoft.com/ "Download Visual Studio")
-  
+  [![Visual Studio](https://img.shields.io/badge/IDE-Visual_Studio-5C2D91)](https://visualstudio.microsoft.com/ "Download Visual Studio")
+  ![Linux x64](https://img.shields.io/badge/Linux-x64-009639)
+  ![Windows x64](https://img.shields.io/badge/Windows-x64-0067C0)
+
   [![Docker Engine](https://img.shields.io/badge/dependency-Docker_Engine-0d4dF2)](https://docs.docker.com/engine/install "Link to web page")
   [![WSL](https://img.shields.io/badge/dependency_(Windows)-WSL-00BCF2)](https://learn.microsoft.com/en-us/windows/wsl/install "Link to web page")
 
-  [![Git for Windows](https://img.shields.io/badge/dependency-Git_for_Windows-F1502F)](https://github.com/git-for-windows/git "Link to repository")
+  [![Git for Windows](https://img.shields.io/badge/dependency_(Windows)-Git_for_Windows-F1502F)](https://github.com/git-for-windows/git "Link to repository")
 
 <!-- Currently, all sources for building Git on Linux are missing -->
 
@@ -24,8 +26,8 @@ The individual versions of Git for Linux can be specified in the [Dockerfile](Li
 Docker is required for the build process; WSL is also required on Windows.
 The build process takes approximately 9 minutes and 15 seconds.
 
-`dotnet build /p:Configuration=Debug`
-`dotnet build /p:Configuration=Release`
+- `dotnet build /p:Configuration=Debug`
+- `dotnet build /p:Configuration=Release`
 
 ### Docker
 
