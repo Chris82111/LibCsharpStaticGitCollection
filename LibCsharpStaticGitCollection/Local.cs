@@ -1,18 +1,94 @@
 ﻿using Chris82111.LibCsharpStaticGitCollection.Dtos;
+using Chris82111.LibCsharpStaticGitCollection.Lib;
 using System.Diagnostics;
+using System.Formats.Tar;
+using System.IO.Compression;
 using System.Runtime.InteropServices;
 
 namespace Chris82111.LibCsharpStaticGitCollection
 {
     public static class Local
     {
+        private static async Task DecompressTarGzToTarAsync(string sourceTarGzFilePath, string tarFilePath, bool overwriteFiles = true)
+        {
+            if (false == overwriteFiles && File.Exists(tarFilePath))
+            {
+                throw new IOException($"Cannot create '{tarFilePath}' because a file or directory with the same name already exists.");
+            } 
+
+            await using FileStream original = File.OpenRead(sourceTarGzFilePath);
+            await using FileStream decompressed = File.Create(tarFilePath);
+            await using GZipStream gzip = new GZipStream(original, CompressionMode.Decompress);
+
+            await gzip.CopyToAsync(decompressed);
+        }
+
+        private static async Task ExtractTarGzToDirectory(string sourceTarGzFilePath, string? targetDirectory = null, bool overwriteFiles = true)
+        {
+            if (string.IsNullOrEmpty(sourceTarGzFilePath))
+            {
+                throw new ArgumentNullException(nameof(sourceTarGzFilePath));
+            }
+
+            if (string.IsNullOrEmpty(targetDirectory))
+            {
+                targetDirectory = ".";
+            }
+
+            var fileName = Path.GetFileName(sourceTarGzFilePath);
+            if (false == fileName.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Invalid file type, only '.tar.gz' is allowed.");
+            }
+
+            string tarFilePath = Path.Combine(targetDirectory, fileName.Substring(0, fileName.Length - 3));
+
+            Directory.CreateDirectory(targetDirectory);
+
+            await DecompressTarGzToTarAsync(sourceTarGzFilePath, tarFilePath, overwriteFiles);
+
+            await TarFile.ExtractToDirectoryAsync(
+                tarFilePath,
+                GitLinuxLib.GitLinuxRelativeOutputZipDirectory,
+                overwriteFiles: overwriteFiles);
+
+            File.Delete(tarFilePath);
+        }
+
+        public static async Task ExtractArchives()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                if (false == Directory.Exists(GitWindowsLib.GitWindowsRelativeOutputZipDirectory))
+                {
+                    await Task.Run(() => 
+                    ZipFile.ExtractToDirectory(
+                        GitWindowsLib.GitWindowsRelativeOutputZipFile, 
+                        GitWindowsLib.GitWindowsRelativeOutputZipDirectory,
+                        overwriteFiles: true));
+		        }
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                if (false == Directory.Exists(GitLinuxLib.GitLinuxRelativeOutputZipDirectory))
+                {
+                    await ExtractTarGzToDirectory(
+                        GitLinuxLib.GitLinuxRelativeOutputZipFile,
+                        GitLinuxLib.GitLinuxRelativeOutputZipDirectory,
+                        overwriteFiles: true);
+                }
+            }
+
+            return;
+        }
+
 #warning Description
         public static string? GitCommandStaticWindows { get; } = GitCommandStaticWindowsInit();
 
-        // https://github.com/git-for-windows/git/releases/tag/v2.51.2.windows.1
         private static string? GitCommandStaticWindowsInit()
         {
-            var fileInfo = new FileInfo(@"./Lib/MinGit-2.51.2-64-bit/cmd/git.exe");
+            var fileInfo = new FileInfo(GitWindowsLib.GitWindowsRelativeOutputExecutable);
             if (fileInfo.Exists)
             {
                 return fileInfo.FullName;
@@ -20,11 +96,15 @@ namespace Chris82111.LibCsharpStaticGitCollection
             return null;
         }
 
-#warning Linux static git command is currently not available
         public static string? GitCommandStaticLinux { get; } = GitCommandStaticLinuxInit();
 
         private static string? GitCommandStaticLinuxInit()
         {
+            var fileInfo = new FileInfo(GitLinuxLib.GitLinuxRelativeOutputExecutable);
+            if (fileInfo.Exists)
+            {
+                return fileInfo.FullName;
+            }
             return null;
         }
 
@@ -47,8 +127,13 @@ namespace Chris82111.LibCsharpStaticGitCollection
 
         private static readonly string WhitchCommand = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "where" : "which";
 
-        public static bool IsProgramAvailable(string programName)
+        public static bool IsProgramAvailable(string? programName)
         {
+            if (string.IsNullOrEmpty(programName))
+            {
+                return false;
+            }
+
             if (File.Exists(programName))
             {
                 return true;
@@ -198,7 +283,7 @@ namespace Chris82111.LibCsharpStaticGitCollection
 
         public static string GitVersion()
         {
-            return CallGit("-v").StandardOutput;
+            return CallGit("-v").StandardOutput.Replace("\r", null).Replace("\n", null);
         }
 
         public static async Task<string> GitVersionAsync()
