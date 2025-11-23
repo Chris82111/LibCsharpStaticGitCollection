@@ -1,33 +1,82 @@
 ﻿using Chris82111.LibCsharpStaticGitCollection.Dtos;
 using Chris82111.LibCsharpStaticGitCollection.Lib;
 using System.Diagnostics;
+using System.Formats.Tar;
+using System.IO.Compression;
 using System.Runtime.InteropServices;
 
 namespace Chris82111.LibCsharpStaticGitCollection
 {
     public static class Local
     {
-        public static void ExtractArchives()
+        private static async Task DecompressTarGzToTarAsync(string sourceTarGzFilePath, string tarFilePath, bool overwriteFiles = true)
+        {
+            if (false == overwriteFiles && File.Exists(tarFilePath))
+            {
+                throw new IOException($"Cannot create '{tarFilePath}' because a file or directory with the same name already exists.");
+            } 
+
+            await using FileStream original = File.OpenRead(sourceTarGzFilePath);
+            await using FileStream decompressed = File.Create(tarFilePath);
+            await using GZipStream gzip = new GZipStream(original, CompressionMode.Decompress);
+
+            await gzip.CopyToAsync(decompressed);
+        }
+
+        private static async Task ExtractTarGzToDirectory(string sourceTarGzFilePath, string? targetDirectory = null, bool overwriteFiles = true)
+        {
+            if (string.IsNullOrEmpty(sourceTarGzFilePath))
+            {
+                throw new ArgumentNullException(nameof(sourceTarGzFilePath));
+            }
+
+            if (string.IsNullOrEmpty(targetDirectory))
+            {
+                targetDirectory = ".";
+            }
+
+            var fileName = Path.GetFileName(sourceTarGzFilePath);
+            if (false == fileName.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Invalid file type, only '.tar.gz' is allowed.");
+            }
+
+            string tarFilePath = Path.Combine(targetDirectory, fileName.Substring(0, fileName.Length - 3));
+
+            Directory.CreateDirectory(targetDirectory);
+
+            await DecompressTarGzToTarAsync(sourceTarGzFilePath, tarFilePath, overwriteFiles);
+
+            await TarFile.ExtractToDirectoryAsync(
+                tarFilePath,
+                GitLinuxLib.GitLinuxRelativeOutputZipDirectory,
+                overwriteFiles: overwriteFiles);
+
+            File.Delete(tarFilePath);
+        }
+
+        public static async Task ExtractArchives()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 if (false == Directory.Exists(GitWindowsLib.GitWindowsRelativeOutputZipDirectory))
                 {
-                    System.IO.Compression.ZipFile.ExtractToDirectory(
+                    await Task.Run(() => 
+                    ZipFile.ExtractToDirectory(
                         GitWindowsLib.GitWindowsRelativeOutputZipFile, 
-                        GitWindowsLib.GitWindowsRelativeOutputZipDirectory);
+                        GitWindowsLib.GitWindowsRelativeOutputZipDirectory,
+                        overwriteFiles: true));
 		        }
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                if (false == Directory.Exists(Path.GetFullPath(GitLinuxLib.GitLinuxRelativeOutputZipDirectory)))
+                if (false == Directory.Exists(GitLinuxLib.GitLinuxRelativeOutputZipDirectory))
                 {
-                    System.Formats.Tar.TarFile.
-                    ExtractToDirectoryAsync(
+                    await ExtractTarGzToDirectory(
                         GitLinuxLib.GitLinuxRelativeOutputZipFile,
-                        GitLinuxLib.GitLinuxRelativeOutputZipDirectory, 
-                        overwriteFiles: false);
+                        GitLinuxLib.GitLinuxRelativeOutputZipDirectory,
+                        overwriteFiles: true);
                 }
             }
 

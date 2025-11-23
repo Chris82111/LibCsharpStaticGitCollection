@@ -1,5 +1,4 @@
-﻿using Chris82111.LibCsharpStaticGitCollection.Lib;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleApp
 {
@@ -11,6 +10,8 @@ namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleApp
             {
                 EnableVTSupport();
             }
+
+            Local.ExtractArchives().Wait();
 
             var color = "\x1b[1;49;33m";
             var reset = "\x1b[0m";
