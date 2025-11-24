@@ -48,3 +48,23 @@ The entire build process requires many prerequisites. To always provide the same
 11. Verify the installation,
     1. from inside WSL: `docker run hello-world`
     2. from cmd/PowerShell: `wsl docker run hello-world`
+
+## Influencing the Build Process
+
+There are various ways to disable individual functions during the build:
+
+1. The file `LibraryConfigDefaults.props` can be modified, but it is tracked by Git.
+2. A new file `LibraryConfigOverrides.props` can be created next to the file `LibraryConfigDefaults.props` with the following content:
+   
+   ```cs
+   <Project>
+     <PropertyGroup>
+       <EnableStaticGitUseLinux>false</EnableStaticGitUseLinux>
+       <EnableStaticGitUseWindows>false</EnableStaticGitUseWindows>
+     </PropertyGroup>
+   </Project>
+   ```
+   
+3. An environment variable can override the properties
+4. A custom property can override the properties: \
+   `dotnet build -c Debug -p:EnableStaticGitUseLinux=false -p:EnableStaticGitUseWindows=false`

@@ -1,6 +1,7 @@
 # Remove Lib folder
 **/[Ll]ib/*
 !**/[Ll]ib/*.props
+**/[Ll]ib/LibraryConfigOverrides.props
 !**/[Ll]ib/*.targets
 !**/[Ll]ib/Dockerfile
 
