@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup Condition="'$(EnableStaticGitUseLinux)' == ''">
+    <EnableStaticGitUseLinux>true</EnableStaticGitUseLinux>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(EnableStaticGitUseWindows)' == ''">
+    <EnableStaticGitUseWindows>true</EnableStaticGitUseWindows>
+  </PropertyGroup>
+</Project>

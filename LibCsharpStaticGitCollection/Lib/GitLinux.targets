@@ -1,6 +1,6 @@
 <Project>
   
-  <ItemGroup Condition="Exists('$(GitLinuxZipFileFull)')" >
+  <ItemGroup Condition="Exists('$(GitLinuxZipFileFull)') And 'true' == '$(EnableStaticGitUseLinux)'" >
     <GitLinuxFiles Include="$(GitLinuxZipFileFull)" />
     <Content Include="@(GitLinuxFiles)" AutoGen="true" >
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -10,7 +10,7 @@
   <Target Name="GitLinuxBuild"
     BeforeTargets="BeforeBuild"
     Outputs="$(GitLinuxZipFileFull)"
-    Condition="!Exists('$(GitLinuxZipFileFull)')" >
+    Condition="!Exists('$(GitLinuxZipFileFull)') And 'true' == '$(EnableStaticGitUseLinux)'" >
     
     <Message Text="Git Linux  : Running Docker using: $(DockerCmd)" Importance="high" />
     

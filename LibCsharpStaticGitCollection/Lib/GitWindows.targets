@@ -1,6 +1,6 @@
 <Project>
   
-  <ItemGroup Condition="Exists('$(GitWindowsZipFileFull)')" >
+  <ItemGroup Condition="Exists('$(GitWindowsZipFileFull)') And 'true' == '$(EnableStaticGitUseWindows)'" >
     <GitWindowsFiles Include="$(GitWindowsZipFileFull)" />
     <Content Include="@(GitWindowsFiles)" AutoGen="true" >
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -10,7 +10,7 @@
   <Target Name="GitWindowsZipDownload"
     BeforeTargets="BeforeBuild"
     Outputs="$(GitWindowsZipFileFull)"
-    Condition="!Exists('$(GitWindowsZipFileFull)')" >
+    Condition="!Exists('$(GitWindowsZipFileFull)') And 'true' == '$(EnableStaticGitUseWindows)'" >
   
     <Message Text="Git Windows: Download ZIP" Importance="High" />
     

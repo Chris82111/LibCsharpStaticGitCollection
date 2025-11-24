@@ -7,6 +7,9 @@
     <RootNamespace>Chris82111.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
   
+  <Import Project="Lib/LibraryConfigDefaults.props" />
+  <Import Project="Lib/LibraryConfigOverrides.props" Condition="Exists('Lib/LibraryConfigOverrides.props')" />
+  
   <!-- PROPS first -->
   <Import Project="Lib/GitWindows.props" />
   <Import Project="Lib/GitLinux.props" />
