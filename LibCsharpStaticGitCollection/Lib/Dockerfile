@@ -254,15 +254,16 @@ ENV CPPFLAGS="-I/build/openssl/include -I/opt/openssl/include -I/opt/zlib/includ
 ENV LDFLAGS="-static -L/build/openssl -L/opt/openssl/lib -L/opt/zlib/lib"
 ENV LIBS="-lssl -lcrypto -lz -ldl -lpthread"
 
-RUN ./configure --prefix=/opt/curl \
-            --disable-shared \
-            --enable-static \
-            --with-ssl=/build/openssl \
-            --with-zlib=/opt/zlib \
-            --with-libpsl=/opt/libpsl \
-            --disable-ldap \
-            --disable-ldap-sasl
-            
+RUN ./configure \
+  --prefix=/opt/curl \
+  --disable-shared \
+  --enable-static \
+  --with-ssl=/build/openssl \
+  --with-zlib=/opt/zlib \
+  --with-libpsl=/opt/libpsl \
+  --disable-ldap \
+  --disable-ldap-sasl
+
 RUN make CC=musl-gcc
 RUN make install
 
@@ -271,13 +272,13 @@ RUN make install
 #int main() { CURL *c = curl_easy_init(); return 0; }' > test.c
 #
 #musl-gcc -static -o test_static test.c \
-#    -I/opt/curl/include \
-#    -I/build/openssl-3.5.4/include \
-#    -L/opt/curl/lib \
-#    -L/opt/libpsl/lib \
-#    -L/opt/zlib/lib \
-#    -L/build/openssl-3.5.4 \
-#    -lcurl -lpsl -lssl -lcrypto -lz -ldl -lpthread
+#  -I/opt/curl/include \
+#  -I/build/openssl-3.5.4/include \
+#  -L/opt/curl/lib \
+#  -L/opt/libpsl/lib \
+#  -L/opt/zlib/lib \
+#  -L/build/openssl-3.5.4 \
+#  -lcurl -lpsl -lssl -lcrypto -lz -ldl -lpthread
 
 # Ensure ouput is static
 RUN \
@@ -337,13 +338,13 @@ RUN ./configure \
   LIBS="-lz -lpsl -lcurl -lssl -lcrypto -lpthread -ldl"
 
 RUN make \
-    NO_INSTALL_HARDLINKS=YesPlease \
-	EXTLIBS="-lz -lpsl -lcurl -lssl -lcrypto -lpthread -ldl"
+  NO_INSTALL_HARDLINKS=YesPlease \
+  EXTLIBS="-lz -lpsl -lcurl -lssl -lcrypto -lpthread -ldl"
 
 RUN make install \
-    NO_INSTALL_HARDLINKS=YesPlease \
-    prefix=/opt/git \
-	EXTLIBS="-lz -lpsl -lcurl -lssl -lcrypto -lpthread -ldl"
+  NO_INSTALL_HARDLINKS=YesPlease \
+  prefix=/opt/git \
+  EXTLIBS="-lz -lpsl -lcurl -lssl -lcrypto -lpthread -ldl"
 
 # If the later CA of the system is used, the use and copying of a local
 # CA can be omitted, as well as the use of an environment variable.
