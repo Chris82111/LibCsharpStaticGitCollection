@@ -33,12 +33,17 @@
 
 
 #------------------------------------------------------------------------------
-### (0)
+### (1)
 #------------------------------------------------------------------------------
 
 FROM ubuntu:24.04 AS base_stage
 
 # Empty
+
+
+#------------------------------------------------------------------------------
+### (2)
+#------------------------------------------------------------------------------
 
 FROM base_stage AS build_stage
 
@@ -49,7 +54,7 @@ RUN apt update -y && apt install -y \
 
 
 #------------------------------------------------------------------------------
-### (1) Build static zlib
+### (3) Build static zlib
 #------------------------------------------------------------------------------
 
 FROM build_stage AS zlib_stage
@@ -84,7 +89,7 @@ RUN \
 
 
 #------------------------------------------------------------------------------
-### (2) Build static OpenSSL
+### (4) Build static OpenSSL
 #------------------------------------------------------------------------------
 
 FROM build_stage AS openssl_stage
@@ -125,68 +130,7 @@ RUN \
 
 
 #------------------------------------------------------------------------------
-### (3) Build static OpenSSH
-#------------------------------------------------------------------------------
-
-FROM build_stage AS ssh_stage
-
-# Update: https://www.openssh.org/portable.html ; Germany (Berlin)
-ENV openSshUrl="https://ftp.spline.de/pub/OpenBSD/OpenSSH/portable/openssh-10.0p1.tar.gz"
-ENV openSshSha256="021a2e709a0edf4250b1256bd5a9e500411a90dddabea830ed59cef90eb9d85c"
-
-RUN apt update -y && apt install -y \
-  autoconf
-
-WORKDIR /build
-
-ADD --checksum=sha256:${openSshSha256} ${openSshUrl} packed.tar.gz
-
-RUN \
-  mkdir -p /build/ssh && \
-  tar xzf "packed.tar.gz" -C "/build/ssh" --strip-components=1 && \
-  rm -f "packed.tar.gz"
-
-COPY --from=zlib_stage    /build/zlib /build/zlib
-COPY --from=zlib_stage    /opt/zlib /opt/zlib
-COPY --from=openssl_stage /build/openssl /build/openssl
-COPY --from=openssl_stage /opt/openssl /opt/openssl
-
-WORKDIR /build/ssh
-
-ENV CC=musl-gcc
-ENV CPPFLAGS="-I/build/openssl/include -I/opt/openssl/include -I/opt/zlib/include"
-ENV LDFLAGS="-static -L/build/openssl -L/opt/openssl/lib -L/opt/zlib/lib"
-ENV LIBS="-lssl -lcrypto -lz -ldl -lpthread"
-
-RUN autoreconf -i
-
-RUN ./configure \
-  --prefix=/opt/ssh \
-  --with-ssl-dir=/build/openssl \
-  --without-pam \
-  --without-shadow \
-  --disable-strip \
-  --host=x86_64-linux-musl \
-  --disable-etc-default-login
-  
-# Multi-threaded build, uses all CPU cores with `-j$(nproc)`
-RUN make
-# Create the sshd user (for full server functionality), This will satisfy the privilege separation check.
-RUN useradd -r -d /var/empty -s /usr/sbin/nologin sshd
-RUN make install
-
-# Optional test run
-#/opt/ssh/bin/ssh -V
-
-# Ensure ouput is static
-RUN \
-  if ldd /opt/ssh/bin/ssh >/dev/null 2>&1; then \
-    echo "ERROR: ssh is dynamically linked"; exit 1; \
-  fi
-
-
-#------------------------------------------------------------------------------
-### (4) Build libpsl
+### (5) Build libpsl
 #------------------------------------------------------------------------------
 
 FROM build_stage AS libpsl_stage
@@ -221,7 +165,7 @@ RUN \
 
 
 #------------------------------------------------------------------------------
-### (5) libcurl (Git HTTPS support)
+### (6) libcurl (Git HTTPS support)
 #------------------------------------------------------------------------------
 
 FROM build_stage AS libcurl_stage
