@@ -323,9 +323,8 @@ RUN \
     echo "ERROR:"; exit 1; \
   fi
 
-
 #------------------------------------------------------------------------------
-### (8) Test
+### (8.1) Test 1
 #------------------------------------------------------------------------------
 
 FROM base_stage
@@ -340,16 +339,44 @@ ENV GIT_SSL_CAINFO="/opt/my/test/git/ca/ca.pem"
 
 WORKDIR /build/git-test
 
-# Test run
 RUN \
   git --version ; if [ $? -ne 0 ] ; then \
-    echo "ERROR:"; exit 1; \
+    echo "ERROR: git --version command failed"; exit 1; \
   fi
 
 RUN \
   git clone https://github.com/Chris82111/LibCsharpStaticGitCollection.git ; if [ $? -ne 0 ] ; then \
-    echo "ERROR:"; exit 1; \
+    echo "ERROR: git clone ... command failed"; exit 1; \
   fi
+
+
+#------------------------------------------------------------------------------
+### (8.2) Test 2
+#------------------------------------------------------------------------------
+
+FROM base_stage
+
+COPY --from=git_stage /opt/git /opt/my/test/git
+
+WORKDIR /build/git-test
+
+ADD setup-git-env.sh /opt/my/test/git
+
+RUN bash -c "\
+    source /opt/my/test/git/setup-git-env.sh --no_extract && \
+    git --version || { \
+        echo 'ERROR: git command failed'; \
+        exit 1; \
+    }\
+"
+
+RUN bash -c "\
+    source /opt/my/test/git/setup-git-env.sh --no_extract && \
+    git clone https://github.com/Chris82111/LibCsharpStaticGitCollection.git || { \
+        echo 'ERROR: git clone ... command failed'; \
+        exit 1; \
+    }\
+"
 
 
 #------------------------------------------------------------------------------
@@ -360,11 +387,14 @@ FROM base_stage
 
 COPY --from=git_stage /opt/git /opt/git
 
-# ENV PATH="/opt/my/test/git/bin:$PATH"
-# ENV GIT_PREFIX="/opt/my/test/git"
-# ENV GIT_EXEC_PATH="/opt/my/test/git/libexec/git-core"
-# ENV GIT_TEMPLATE_DIR="/opt/my/test/git/share/git-core/templates/"
-# ENV GIT_SSL_CAINFO="/opt/my/test/git/ca/ca.pem"
+# The file `setup-git-env.sh` sets the following variables. 
+# You can use the script or do this yourself:
+#
+# export PATH="/opt/git/bin:$PATH"
+# export GIT_PREFIX="/opt/git"
+# export GIT_EXEC_PATH="/opt/git/libexec/git-core"
+# export GIT_TEMPLATE_DIR="/opt/git/share/git-core/templates/"
+# export GIT_SSL_CAINFO="/opt/git/ca/ca.pem"
 
 # WORKDIR /opt/git
 # RUN find . -type f -perm -111 -exec sh -c 'file "$0" | grep -q ELF && strip "$0"' {} \;
