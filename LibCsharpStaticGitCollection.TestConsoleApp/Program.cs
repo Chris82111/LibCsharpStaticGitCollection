@@ -28,6 +28,8 @@ namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleApp
 
             Console.WriteLine($"{color}Version{reset}: {Local.GitVersion()}");
 
+            var gitCommand = Local.GitCommand;
+
             try
             {
                 Console.WriteLine($"{color}Windows{reset}");
@@ -43,6 +45,17 @@ namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleApp
                 Local.GitCommand = Local.GitCommandStaticLinux;
                 Console.WriteLine($"{color}Version  {reset}: {Local.GitVersion()}");
                 Console.WriteLine($"{color}Available{reset}: {Local.IsGitAvailable()}");
+            }
+            catch { ; }
+
+            Local.GitCommand = gitCommand;
+
+            try
+            {
+                var result = Local.CallGit(@"clone https://github.com/Chris82111/LibCsharpStaticGitCollection.git");
+                Console.WriteLine($"{color}ExitCode      {reset}: {result.ExitCode}");
+                Console.WriteLine($"{color}StandardOutput{reset}: {result.StandardOutput}");
+                Console.WriteLine($"{color}StandardError {reset}: {result.StandardError}");
             }
             catch { ; }
         }

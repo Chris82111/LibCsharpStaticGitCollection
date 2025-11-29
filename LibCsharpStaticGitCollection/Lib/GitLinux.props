@@ -10,6 +10,9 @@
     
     <!-- bin/git -->
     <GitLinuxZipRelativeExecutable>$([System.IO.Path]::Combine('bin', 'git'))</GitLinuxZipRelativeExecutable>
+    
+    <!-- setup-git-env.sh -->
+    <GitLinuxSetupEnvironment>setup-git-env.sh</GitLinuxSetupEnvironment>
   
   </PropertyGroup>
   
@@ -27,6 +30,9 @@
     
     <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib/GitLinux.tar.gz -->
     <GitLinuxZipFileFull>$([System.IO.Path]::Combine('$(GitLinuxLibDirectory)', '$(GitLinuxZipFile)'))</GitLinuxZipFileFull>
+	
+    <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib/setup-git-env.sh -->
+    <GitLinuxSetupEnvironmentFull>$([System.IO.Path]::Combine('$(GitLinuxLibDirectory)', '$(GitLinuxSetupEnvironment)'))</GitLinuxSetupEnvironmentFull>
     
     <!-- GitLinux -->
     <GitLinuxBaseName>$(GitLinuxZipFile.Replace('.tar.gz',''))</GitLinuxBaseName>
