@@ -1,5 +1,9 @@
 # syntax=docker/dockerfile:1
 
+#------------------------------------------------------------------------------
+### Manual compiling and testing
+#------------------------------------------------------------------------------
+
 # Build (optional `--no-cache`)
 # docker build --progress=plain -t tempimage .
 
@@ -33,12 +37,35 @@
 
 
 #------------------------------------------------------------------------------
-### (1)
+### (1) Sources
 #------------------------------------------------------------------------------
 
 FROM ubuntu:24.04 AS base_stage
 
-# Empty
+# (3) Build static zlib
+# Update: https://zlib.net/
+ENV zlibUrl="https://zlib.net/zlib-1.3.1.tar.gz"
+ENV zlibSha256="9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23"
+
+# (4) Build static OpenSSL
+# Update: https://github.com/openssl/openssl/releases
+ENV openSslUrl="https://github.com/openssl/openssl/releases/download/openssl-3.5.4/openssl-3.5.4.tar.gz"
+ENV openSslSha256="967311f84955316969bdb1d8d4b983718ef42338639c621ec4c34fddef355e99"
+
+# (5) Build libpsl
+# Update: https://www.linuxfromscratch.org/blfs/view/svn/basicnet/libpsl.html
+ENV libpslUrl="https://github.com/rockdaboot/libpsl/releases/download/0.21.5/libpsl-0.21.5.tar.gz"
+ENV libpslSha256="1dcc9ceae8b128f3c0b3f654decd0e1e891afc6ff81098f227ef260449dae208"
+
+# (6) Build libcurl (Git HTTPS support)
+# Update: https://curl.se/download.html
+ENV libcurlUrl="https://curl.se/download/curl-8.17.0.tar.gz"
+ENV libcurlSha256="e8e74cdeefe5fb78b3ae6e90cd542babf788fa9480029cfcee6fd9ced42b7910"
+
+# (7) Git
+# Update: https://git-scm.com/install/source
+ENV gitUrl="https://www.kernel.org/pub/software/scm/git/git-2.51.2.tar.gz"
+ENV gitSha256="9b44c2b337ec838e10aad42439d390963904449710d30c9e7e4ba449f45da98f"
 
 
 #------------------------------------------------------------------------------
@@ -47,7 +74,7 @@ FROM ubuntu:24.04 AS base_stage
 
 FROM base_stage AS build_stage
 
-RUN apt update -y && apt install -y \
+RUN apt-get update -y && apt-get install -y \
   build-essential \
   musl \
   musl-tools
@@ -58,10 +85,6 @@ RUN apt update -y && apt install -y \
 #------------------------------------------------------------------------------
 
 FROM build_stage AS zlib_stage
-
-# Update: https://zlib.net/
-ENV zlibUrl="https://zlib.net/zlib-1.3.1.tar.gz"
-ENV zlibSha256="9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23"
 
 WORKDIR /build
 
@@ -93,10 +116,6 @@ RUN \
 #------------------------------------------------------------------------------
 
 FROM build_stage AS openssl_stage
-
-# Update: https://github.com/openssl/openssl/releases
-ENV openSslUrl="https://github.com/openssl/openssl/releases/download/openssl-3.5.4/openssl-3.5.4.tar.gz"
-ENV openSslSha256="967311f84955316969bdb1d8d4b983718ef42338639c621ec4c34fddef355e99"
 
 WORKDIR /build
 
@@ -135,11 +154,7 @@ RUN \
 
 FROM build_stage AS libpsl_stage
 
-# Update: https://www.linuxfromscratch.org/blfs/view/svn/basicnet/libpsl.html
-ENV libpslUrl="https://github.com/rockdaboot/libpsl/releases/download/0.21.5/libpsl-0.21.5.tar.gz"
-ENV libpslSha256="1dcc9ceae8b128f3c0b3f654decd0e1e891afc6ff81098f227ef260449dae208"
-
-RUN apt update -y && apt install -y \
+RUN apt-get update -y && apt-get install -y \
   python3
 
 WORKDIR /build
@@ -165,16 +180,12 @@ RUN \
 
 
 #------------------------------------------------------------------------------
-### (6) libcurl (Git HTTPS support)
+### (6) Build libcurl (Git HTTPS support)
 #------------------------------------------------------------------------------
 
 FROM build_stage AS libcurl_stage
 
-# Update: https://curl.se/download.html
-ENV libcurlUrl="https://curl.se/download/curl-8.17.0.tar.gz"
-ENV libcurlSha256="e8e74cdeefe5fb78b3ae6e90cd542babf788fa9480029cfcee6fd9ced42b7910"
-
-RUN apt -y update && apt install -y \
+RUN apt-get -y update && apt-get install -y \
   gettext
 
 WORKDIR /build
@@ -242,11 +253,7 @@ RUN \
 
 FROM build_stage AS git_stage
 
-# Update: https://git-scm.com/install/source
-ENV gitUrl="https://www.kernel.org/pub/software/scm/git/git-2.51.2.tar.gz"
-ENV gitSha256="9b44c2b337ec838e10aad42439d390963904449710d30c9e7e4ba449f45da98f"
-
-RUN apt update -y && apt install -y \
+RUN apt-get update -y && apt-get install -y \
   libcurl4-openssl-dev \
   gettext
 
