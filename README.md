@@ -52,6 +52,46 @@ The entire build process requires many prerequisites. To always provide the same
     1. from inside WSL: `docker run hello-world`
     2. from cmd/PowerShell: `wsl docker run hello-world`
 
+#### Docker on Linux
+
+Docker must be installed on Linux.
+
+1. Mounted NTFS drive:
+
+   ```bash
+   EXEC : error : failed to solve: failed to read dockerfile: open Dockerfile: no such file or directory
+       LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib/GitLinux.targets(27,5): error MSB3073: The command "docker build --progress=plain -f LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib/Dockerfile -t staticgitbuildtempimage LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib" exited with code 1.
+   ```
+   
+   Do not use an NTFS-mounted drive. This can cause Docker to be unable to find the `Dockerfile` file.
+
+#### Docker Errors
+
+Here is a list of common mistakes:
+
+1. Permission denied:
+   
+   ```bash
+   LibCsharpStaticGitCollection failed with 2 error(s) (0.1s)
+       EXEC : error : permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Head "http://%2Fvar%2Frun%2Fdocker.sock/_ping": dial unix /var/run/docker.sock: connect: permission denied
+       LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib/GitLinux.targets(21,5): error MSB3073: The command "docker build --progress=plain -t staticgitbuildtempimage ." exited with code 1.
+   ```
+   
+   To provoke this error, you can run `docker ps` in the terminal. An error should then appear due to insufficient permissions. This error can be resolved as follows. The current user must be added to the Docker group. Enter the following commands:
+   
+   1.1. Checks whether the group exists:  
+        `getent group docker`  
+        If it prints a line like `docker:x:AnyNumer:` then the group exists.  
+        If it prints nothing, the group does not exist.  
+
+   1.1. Only create a group if it does not exist; sudo is required:  
+        `if ! getent group docker > /dev/null ; then sudo groupadd docker ; fi`  
+
+   1.2. Add your user to the docker group:  
+        `sudo usermod -aG docker $USER`
+
+   Then log out and back in (or reboot) so the group takes effect.
+
 ## Influencing the Build Process
 
 There are various ways to disable individual functions during the build:
@@ -69,5 +109,5 @@ There are various ways to disable individual functions during the build:
    ```
    
 3. An environment variable can override the properties
-4. A custom property can override the properties: \
+4. A custom property can override the properties:  
    `dotnet build -c Debug -p:EnableStaticGitUseLinux=false -p:EnableStaticGitUseWindows=false`
