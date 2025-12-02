@@ -1,7 +1,10 @@
 <Project>
+  <ItemGroup>
+    <GitLinuxFiles Include="$(GitLinuxZipFileFull)" />
+    <GitLinuxFiles Include="$(GitLinuxSetupEnvironmentFull)" />
+  </ItemGroup>
   
   <ItemGroup Condition="Exists('$(GitLinuxZipFileFull)') And 'true' == '$(EnableStaticGitUseLinux)'" >
-    <GitLinuxFiles Include="$(GitLinuxZipFileFull)" />
     <Content Include="@(GitLinuxFiles)" AutoGen="true" >
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -30,7 +33,6 @@
       <Exec Command="$(DockerCmd) rm staticgitbuildexporttemp" />
     
     <ItemGroup>
-      <GitLinuxFiles Include="$(GitLinuxZipFileFull)" />
       <Content Include="@(GitLinuxFiles)" AutoGen="true" >
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>

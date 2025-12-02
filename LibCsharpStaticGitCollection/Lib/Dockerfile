@@ -1,5 +1,8 @@
 # syntax=docker/dockerfile:1
-FROM ubuntu:24.04
+
+#------------------------------------------------------------------------------
+### Manual compiling and testing
+#------------------------------------------------------------------------------
 
 # Build (optional `--no-cache`)
 # docker build --progress=plain -t tempimage .
@@ -9,210 +12,404 @@ FROM ubuntu:24.04
 
 # Export
 # docker create --name exporttemp tempimage
-# docker cp exporttemp:/opt/musl/git ./git-static
+# docker cp exporttemp:/build/GitLinux.tar.gz ./GitLinux.tar.gz
 # docker rm exporttemp
+
+# Extract
+# tar xzf GitLinux.tar.gz
 
 # Cleanup
 # docker rmi tempimage
 # docker system prune -f
 
 # sudo
-# sudo ln -s <your-path>/git-static /opt/musl/git
+# sudo ln -s <yourPath>/git-static /opt/musl/git
 
-# normal user
-# export PATH="<your-path>/git-static/bin:$PATH"
-# export GIT_PREFIX="<your-path>/git-static"
-# export GIT_EXEC_PATH="<your-path>/git-static/libexec/git-core"
-# export GIT_TEMPLATE_DIR="<your-path>/git-static/share/git-core/templates/"
+# Normal user
+# export PATH="<yourPath>/bin:$PATH"
+# export GIT_PREFIX="<yourPath>"
+# export GIT_EXEC_PATH="<yourPath>/libexec/git-core"
+# export GIT_TEMPLATE_DIR="<yourPath>/share/git-core/templates/"
+# export GIT_SSL_CAINFO=""<yourPath>/ca/ca.pem"
 
-# ./git clone https://github.com/Chris82111/lib-c-median
+# Test
+# git clone https://github.com/Chris82111/LibCsharpStaticGitCollection.git
 
-RUN apt -y update && apt install -y \
+
+#------------------------------------------------------------------------------
+### (1) Sources
+#------------------------------------------------------------------------------
+
+FROM ubuntu:24.04 AS base_stage
+
+# (3) Build zlib
+# Update: https://zlib.net/
+ENV zlibUrl="https://zlib.net/zlib-1.3.1.tar.gz"
+ENV zlibSha256="9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23"
+
+# (4) Build OpenSSL
+# Update: https://github.com/openssl/openssl/releases
+ENV openSslUrl="https://github.com/openssl/openssl/releases/download/openssl-3.5.4/openssl-3.5.4.tar.gz"
+ENV openSslSha256="967311f84955316969bdb1d8d4b983718ef42338639c621ec4c34fddef355e99"
+
+# (5) Build libpsl
+# Update: https://www.linuxfromscratch.org/blfs/view/svn/basicnet/libpsl.html
+ENV libpslUrl="https://github.com/rockdaboot/libpsl/releases/download/0.21.5/libpsl-0.21.5.tar.gz"
+ENV libpslSha256="1dcc9ceae8b128f3c0b3f654decd0e1e891afc6ff81098f227ef260449dae208"
+
+# (6) Build libcurl (Git HTTPS support)
+# Update: https://curl.se/download.html
+ENV libcurlUrl="https://curl.se/download/curl-8.17.0.tar.gz"
+ENV libcurlSha256="e8e74cdeefe5fb78b3ae6e90cd542babf788fa9480029cfcee6fd9ced42b7910"
+
+# (7) Build Git
+# Update: https://git-scm.com/install/source
+ENV gitUrl="https://www.kernel.org/pub/software/scm/git/git-2.51.2.tar.gz"
+ENV gitSha256="9b44c2b337ec838e10aad42439d390963904449710d30c9e7e4ba449f45da98f"
+
+
+#------------------------------------------------------------------------------
+### (2)
+#------------------------------------------------------------------------------
+
+FROM base_stage AS build_stage
+
+RUN apt-get update -y && apt-get install -y \
   build-essential \
-  autoconf \
-  curl \
-  gettext \
   musl \
-  musl-tools \
-  zlib1g-dev \
-  libssl-dev \
-  libcurl4-openssl-dev \
-  libexpat1-dev
+  musl-tools
 
-#RUN which tar
-RUN mkdir -p "/build"
+
+#------------------------------------------------------------------------------
+### (3) Build zlib
+#------------------------------------------------------------------------------
+
+FROM build_stage AS zlib_stage
+
 WORKDIR /build
 
-# (1) Build static zlib
-WORKDIR /build
-RUN curl -O https://zlib.net/zlib-1.3.1.tar.gz
-RUN tar xzf zlib-1.3.1.tar.gz
-WORKDIR /build/zlib-1.3.1
-RUN CC=musl-gcc ./configure --prefix=/opt/musl/zlib --static
-RUN make
-RUN make install
+ADD --checksum=sha256:${zlibSha256} ${zlibUrl} packed.tar.gz
+
 RUN \
-  if ldd /opt/musl/zlib/lib/libz.a >/dev/null 2>&1; then \
+  mkdir -p /build/zlib && \
+  tar xzf "packed.tar.gz" -C "/build/zlib" --strip-components=1 && \
+  rm -f "packed.tar.gz"
+
+WORKDIR /build/zlib
+
+# Configure
+RUN CC=musl-gcc ./configure --prefix=/opt/zlib --static
+# Multi-threaded build, uses all CPU cores with `-j$(nproc)`
+RUN make
+# Install
+RUN make install
+
+# Ensure ouput is static
+RUN \
+  if ldd /opt/zlib/lib/libz.a >/dev/null 2>&1; then \
     echo "ERROR: libz.a is dynamically linked"; exit 1; \
   fi
-  
-#(2) Build static OpenSSL
+
+
+#------------------------------------------------------------------------------
+### (4) Build OpenSSL
+#------------------------------------------------------------------------------
+
+FROM build_stage AS openssl_stage
+
 WORKDIR /build
-RUN curl -LO https://github.com/openssl/openssl/releases/download/openssl-3.5.4/openssl-3.5.4.tar.gz
-RUN tar xzf openssl-3.5.4.tar.gz
-WORKDIR /build/openssl-3.5.4
-# with disable secure memory: 
+
+ADD --checksum=sha256:${openSslSha256} ${openSslUrl} packed.tar.gz
+
+RUN \
+  mkdir -p /build/openssl && \
+  tar xzf "packed.tar.gz" -C "/build/openssl" --strip-components=1 && \
+  rm -f "packed.tar.gz"
+
+WORKDIR /build/openssl
+
+# With disable secure memory: 
 # Disable AF_ALG engine during configuration
 # Now configure it correctly for a musl static build, disabling features that cause kernel header issues:
-RUN ./Configure linux-x86_64 no-secure-memory no-afalgeng no-shared no-dso --prefix=/opt/musl/openssl --openssldir=/opt/musl/openssl
+RUN ./Configure linux-x86_64 no-secure-memory no-afalgeng no-shared no-dso --prefix=/opt/openssl --openssldir=/opt/openssl
+# Multi-threaded build, uses all CPU cores with `-j$(nproc)`
 RUN make CC=musl-gcc AR="ar" RANLIB="ranlib"
 RUN make install_sw
+
+# Ensure ouput is static
 RUN \
-  if ldd /opt/musl/openssl/lib64/libcrypto.a >/dev/null 2>&1; then \
+  if ldd /opt/openssl/lib64/libcrypto.a >/dev/null 2>&1; then \
     echo "ERROR: libcrypto.a is dynamically linked"; exit 1; \
   fi
+
 RUN \
-  if ldd /opt/musl/openssl/lib64/libssl.a >/dev/null 2>&1; then \
+  if ldd /opt/openssl/lib64/libssl.a >/dev/null 2>&1; then \
     echo "ERROR: libssl.a is dynamically linked"; exit 1; \
   fi
 
-# (4) Build static OpenSSH
-WORKDIR /build
-# https://www.openssh.org/portable.html ; Germany (Berlin)
-RUN curl -O https://ftp.spline.de/pub/OpenBSD/OpenSSH/portable/openssh-10.0p1.tar.gz
-RUN tar xzf openssh-10.0p1.tar.gz
-WORKDIR /build/openssh-10.0p1
 
-# export
-ENV CC=musl-gcc
-ENV CPPFLAGS="-I/build/openssl-3.5.4/include -I/opt/musl/openssl/include -I/opt/musl/zlib/include"
-ENV LDFLAGS="-static -L/build/openssl-3.5.4 -L/opt/musl/openssl/lib -L/opt/musl/zlib/lib"
-ENV LIBS="-lssl -lcrypto -lz -ldl -lpthread"
+#------------------------------------------------------------------------------
+### (5) Build libpsl
+#------------------------------------------------------------------------------
 
-RUN autoreconf -i
+FROM build_stage AS libpsl_stage
 
-RUN ./configure \
-  --prefix=/opt/musl/ssh \
-  --with-ssl-dir=/build/openssl-3.5.4 \
-  --without-pam \
-  --without-shadow \
-  --disable-strip \
-  --host=x86_64-linux-musl \
-  --disable-etc-default-login
-
-RUN make -j$(nproc)
-# Create the sshd user (for full server functionality), This will satisfy the privilege separation check.
-RUN useradd -r -d /var/empty -s /usr/sbin/nologin sshd
-RUN make install
-
-#/opt/musl/ssh/bin/ssh -V
-RUN \
-  if ldd /opt/musl/ssh/bin/ssh >/dev/null 2>&1; then \
-    echo "ERROR: ssh is dynamically linked"; exit 1; \
-  fi
-
-# (5) Build libpsl
-#apt update
-RUN apt -y update && apt install -y \
+RUN apt-get update -y && apt-get install -y \
   python3
-  
+
 WORKDIR /build
-RUN curl -LO https://github.com/rockdaboot/libpsl/releases/download/0.21.5/libpsl-0.21.5.tar.gz
-RUN tar xzf libpsl-0.21.5.tar.gz
-WORKDIR /build/libpsl-0.21.5
-RUN ./configure --prefix=/opt/musl/libpsl --disable-shared --enable-static
+
+ADD --checksum=sha256:${libpslSha256} ${libpslUrl} packed.tar.gz
+
+RUN \
+  mkdir -p /build/libpsl && \
+  tar xzf "packed.tar.gz" -C "/build/libpsl" --strip-components=1 && \
+  rm -f "packed.tar.gz"
+
+WORKDIR /build/libpsl
+
+RUN ./configure --prefix=/opt/libpsl --disable-shared --enable-static
 RUN make CC=musl-gcc
 RUN make install
 
+# Ensure ouput is static
 RUN \
-  if ldd /opt/musl/libpsl/lib/libpsl.a >/dev/null 2>&1; then \
+  if ldd /opt/libpsl/lib/libpsl.a >/dev/null 2>&1; then \
     echo "ERROR: libpsl.a is dynamically linked"; exit 1; \
   fi
 
-# (6) libcurl (Git HTTPS support)
+
+#------------------------------------------------------------------------------
+### (6) Build libcurl (Git HTTPS support)
+#------------------------------------------------------------------------------
+
+FROM build_stage AS libcurl_stage
+
+RUN apt-get -y update && apt-get install -y \
+  gettext
+
 WORKDIR /build
-RUN curl -O https://curl.se/download/curl-8.17.0.tar.gz
-RUN tar xzf curl-8.17.0.tar.gz
-WORKDIR /build/curl-8.17.0
+
+ADD --checksum=sha256:${libcurlSha256} ${libcurlUrl} packed.tar.gz
+
+RUN \
+  mkdir -p /build/curl && \
+  tar xzf "packed.tar.gz" -C "/build/curl" --strip-components=1 && \
+  rm -f "packed.tar.gz"
+
+COPY --from=zlib_stage    /opt/zlib /opt/zlib
+COPY --from=openssl_stage /build/openssl /build/openssl
+COPY --from=openssl_stage /opt/openssl /opt/openssl
+COPY --from=libpsl_stage  /opt/libpsl /opt/libpsl
+
+WORKDIR /build/curl
 
 ENV CC=musl-gcc
-ENV CPPFLAGS="-I/build/openssl-3.5.4/include -I/opt/musl/ssl/include -I/opt/musl/zlib/include"
-ENV LDFLAGS="-static -L/build/openssl-3.5.4 -L/opt/musl/ssl/lib -L/opt/musl/zlib/lib"
+ENV CPPFLAGS="-I/build/openssl/include -I/opt/openssl/include -I/opt/zlib/include"
+ENV LDFLAGS="-static -L/build/openssl -L/opt/openssl/lib -L/opt/zlib/lib"
 ENV LIBS="-lssl -lcrypto -lz -ldl -lpthread"
 
-RUN ./configure --prefix=/opt/musl/curl \
-            --disable-shared \
-            --enable-static \
-            --with-ssl=/build/openssl-3.5.4 \
-            --with-zlib=/opt/musl/zlib \
-            --with-libpsl=/opt/musl/libpsl \
-            --disable-ldap \
-            --disable-ldap-sasl
-            
+RUN ./configure \
+  --prefix=/opt/curl \
+  --disable-shared \
+  --enable-static \
+  --with-ssl=/build/openssl \
+  --with-zlib=/opt/zlib \
+  --with-libpsl=/opt/libpsl \
+  --disable-ldap \
+  --disable-ldap-sasl
+
 RUN make CC=musl-gcc
 RUN make install
 
-RUN \
-  if ldd /opt/musl/curl/lib/libcurl.a >/dev/null 2>&1; then \
-    echo "ERROR: libcurl.a is dynamically linked"; exit 1; \
-  fi
-
-#Test 
+# Optional test run 
 #echo '#include <curl/curl.h>
 #int main() { CURL *c = curl_easy_init(); return 0; }' > test.c
 #
 #musl-gcc -static -o test_static test.c \
-#    -I/opt/musl/curl/include \
-#    -I/build/openssl-3.5.4/include \
-#    -L/opt/musl/curl/lib \
-#    -L/opt/musl/libpsl/lib \
-#    -L/opt/musl/zlib/lib \
-#    -L/build/openssl-3.5.4 \
-#    -lcurl -lpsl -lssl -lcrypto -lz -ldl -lpthread
+#  -I/opt/curl/include \
+#  -I/build/openssl-3.5.4/include \
+#  -L/opt/curl/lib \
+#  -L/opt/libpsl/lib \
+#  -L/opt/zlib/lib \
+#  -L/build/openssl-3.5.4 \
+#  -lcurl -lpsl -lssl -lcrypto -lz -ldl -lpthread
 
-# (7) Git
+# Ensure ouput is static
+RUN \
+  if ldd /opt/curl/lib/libcurl.a >/dev/null 2>&1; then \
+    echo "ERROR: libcurl.a is dynamically linked"; exit 1; \
+  fi
+
+RUN \
+  /opt/curl/bin/curl https://github.com >/dev/null ; if [ $? -ne 0 ] ; then \
+    echo "ERROR: curl is not functioning properly and cannot be used"; exit 1; \
+  fi
+
+
+#------------------------------------------------------------------------------
+### (7) Build Git
+#------------------------------------------------------------------------------
+
+FROM build_stage AS git_stage
+
+RUN apt-get update -y && apt-get install -y \
+  libcurl4-openssl-dev \
+  gettext
+
 WORKDIR /build
-RUN curl -LO https://www.kernel.org/pub/software/scm/git/git-2.51.2.tar.gz
-RUN tar xzf git-2.51.2.tar.gz
-WORKDIR /build/git-2.51.2
 
+ADD --checksum=sha256:${gitSha256} ${gitUrl} packed.tar.gz
+
+RUN \
+  mkdir -p /build/git && \
+  tar xzf "packed.tar.gz" -C "/build/git" --strip-components=1 && \
+  rm -f "packed.tar.gz"
+
+COPY --from=zlib_stage    /build/zlib /build/zlib
+COPY --from=zlib_stage    /opt/zlib /opt/zlib
+COPY --from=openssl_stage /build/openssl /build/openssl
+COPY --from=openssl_stage /opt/openssl /opt/openssl
+COPY --from=libpsl_stage  /opt/libpsl /opt/libpsl
+COPY --from=libcurl_stage /opt/curl /opt/curl
+
+WORKDIR /build/git
+
+# For the `./configure`, `make`, and `make install` command
 ENV CC=musl-gcc
-ENV CFLAGS="-static -I/opt/musl/zlib/include -I/opt/musl/libpsl/include -I/opt/musl/curl/include -I/build/openssl-3.5.4/include"
-ENV LDFLAGS="-static -L/opt/musl/zlib/lib -L/opt/musl/libpsl/lib -L/opt/musl/curl/lib -L/build/openssl-3.5.4"
-ENV LIBS="-lz -lpsl -lcurl -lssl -lcrypto -lpthread -ldl"
+ENV CFLAGS="-static -I/opt/zlib/include -I/opt/libpsl/include -I/opt/curl/include -I/build/openssl/include"
+ENV LDFLAGS="-static -L/opt/zlib/lib -L/opt/libpsl/lib -L/opt/curl/lib -L/opt/openssl/lib64"
 
 RUN ./configure \
-  --prefix=/opt/git-static \
-  --with-curl=/opt/musl/curl \
-  --with-openssl=/build/openssl-3.5.4 \
+  --prefix=/opt/git \
+  --with-curl=/opt/curl \
+  --with-openssl=/opt/openssl \
   --without-expat \
-  NO_TCLTK=YesPlease
+  NO_TCLTK=YesPlease \
+  LIBS="-lz -lpsl -lcurl -lssl -lcrypto -lpthread -ldl"
 
 RUN make \
-    NO_INSTALL_HARDLINKS=YesPlease \
-    CC=musl-gcc \
-    CFLAGS="-static" \
-    LDFLAGS="-static -L/opt/musl/curl/lib -L/opt/musl/libpsl/lib -L/opt/musl/zlib/lib -L/build/openssl-3.5.4" \
-    EXTLIBS="-lpsl -lcurl -lssl -lcrypto -lz -lpthread -ldl"
+  NO_INSTALL_HARDLINKS=YesPlease \
+  EXTLIBS="-lz -lpsl -lcurl -lssl -lcrypto -lpthread -ldl"
 
 RUN make install \
-    NO_INSTALL_HARDLINKS=YesPlease \
-    prefix=/opt/musl/git \
-    CC=musl-gcc \
-    CFLAGS="-static" \
-    LDFLAGS="-static -L/opt/musl/curl/lib -L/opt/musl/libpsl/lib -L/opt/musl/zlib/lib -L/build/openssl-3.5.4" \
-    EXTLIBS="-lpsl -lcurl -lssl -lcrypto -lz -lpthread -ldl"
+  NO_INSTALL_HARDLINKS=YesPlease \
+  prefix=/opt/git \
+  EXTLIBS="-lz -lpsl -lcurl -lssl -lcrypto -lpthread -ldl"
 
-# /opt/musl/git/bin/git --version
+# If the later CA of the system is used, the use and copying of a local
+# CA can be omitted, as well as the use of an environment variable.
+# But `libcurl4-openssl-dev` or `ca-certificates` must be installed.
 RUN \
-  if ldd /opt/musl/git/bin/git >/dev/null 2>&1; then \
+  mkdir -p /opt/git/ca && \
+  cp /etc/ssl/certs/ca-certificates.crt /opt/git/ca/ca.pem
+
+ENV PATH="/opt/git/bin:$PATH"
+ENV GIT_PREFIX="/opt/git"
+ENV GIT_EXEC_PATH="/opt/git/libexec/git-core"
+ENV GIT_TEMPLATE_DIR="/opt/git/share/git-core/templates/"
+# Tell Git to use local CA bundle
+ENV GIT_SSL_CAINFO="/opt/git/ca/ca.pem"
+
+WORKDIR /build/git-test
+
+# Ensure ouput is static
+RUN \
+  if ldd /opt/git/bin/git >/dev/null 2>&1; then \
     echo "ERROR: git is dynamically linked"; exit 1; \
   fi
 
-# WORKDIR /opt/musl/git
+# Test run
+RUN \
+  git --version ; if [ $? -ne 0 ] ; then \
+    echo "ERROR:"; exit 1; \
+  fi
+
+RUN \
+  git clone https://github.com/Chris82111/LibCsharpStaticGitCollection.git ; if [ $? -ne 0 ] ; then \
+    echo "ERROR:"; exit 1; \
+  fi
+
+#------------------------------------------------------------------------------
+### (8.1) Test 1
+#------------------------------------------------------------------------------
+
+FROM base_stage
+
+COPY --from=git_stage /opt/git /opt/my/test/git
+
+ENV PATH="/opt/my/test/git/bin:$PATH"
+ENV GIT_PREFIX="/opt/my/test/git"
+ENV GIT_EXEC_PATH="/opt/my/test/git/libexec/git-core"
+ENV GIT_TEMPLATE_DIR="/opt/my/test/git/share/git-core/templates/"
+ENV GIT_SSL_CAINFO="/opt/my/test/git/ca/ca.pem"
+
+WORKDIR /build/git-test
+
+RUN \
+  git --version ; if [ $? -ne 0 ] ; then \
+    echo "ERROR: git --version command failed"; exit 1; \
+  fi
+
+RUN \
+  git clone https://github.com/Chris82111/LibCsharpStaticGitCollection.git ; if [ $? -ne 0 ] ; then \
+    echo "ERROR: git clone ... command failed"; exit 1; \
+  fi
+
+
+#------------------------------------------------------------------------------
+### (8.2) Test 2
+#------------------------------------------------------------------------------
+
+FROM base_stage
+
+COPY --from=git_stage /opt/git /opt/my/test/git
+
+WORKDIR /build/git-test
+
+ADD setup-git-env.sh /opt/my/test/git
+
+RUN bash -c "\
+    source /opt/my/test/git/setup-git-env.sh --no_extract && \
+    git --version || { \
+        echo 'ERROR: git command failed'; \
+        exit 1; \
+    }\
+"
+
+RUN bash -c "\
+    source /opt/my/test/git/setup-git-env.sh --no_extract && \
+    git clone https://github.com/Chris82111/LibCsharpStaticGitCollection.git || { \
+        echo 'ERROR: git clone ... command failed'; \
+        exit 1; \
+    }\
+"
+
+
+#------------------------------------------------------------------------------
+### (9) Archive
+#------------------------------------------------------------------------------
+
+FROM base_stage
+
+COPY --from=git_stage /opt/git /opt/git
+
+# The file `setup-git-env.sh` sets the following variables. 
+# You can use the script or do this yourself:
+#
+# export PATH="/opt/git/bin:$PATH"
+# export GIT_PREFIX="/opt/git"
+# export GIT_EXEC_PATH="/opt/git/libexec/git-core"
+# export GIT_TEMPLATE_DIR="/opt/git/share/git-core/templates/"
+# export GIT_SSL_CAINFO="/opt/git/ca/ca.pem"
+
+# WORKDIR /opt/git
 # RUN find . -type f -perm -111 -exec sh -c 'file "$0" | grep -q ELF && strip "$0"' {} \;
 
 WORKDIR /build
-RUN tar -czvf GitLinux.tar.gz -C /opt/musl/git .
+RUN tar czvf GitLinux.tar.gz -C /opt/git .
 
-CMD ["echo", "Done"]
+
+#------------------------------------------------------------------------------
+### End
+#------------------------------------------------------------------------------

@@ -2,6 +2,7 @@
 using Chris82111.LibCsharpStaticGitCollection.Lib;
 using System.Diagnostics;
 using System.Formats.Tar;
+using System.IO;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 
@@ -78,9 +79,24 @@ namespace Chris82111.LibCsharpStaticGitCollection
                         GitLinuxLib.GitLinuxRelativeOutputZipDirectory,
                         overwriteFiles: true);
                 }
+
+                SetToPahtVariable(GitLinuxLib.GitLinuxRelativeOutputZipDirectory);
+                Environment.SetEnvironmentVariable("GIT_PREFIX", GitLinuxLib.GitLinuxRelativeOutputZipDirectory);
+                Environment.SetEnvironmentVariable("GIT_EXEC_PATH", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputZipDirectory, "libexec/git-core"));
+                Environment.SetEnvironmentVariable("GIT_TEMPLATE_DIR", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputZipDirectory, "share/git-core/templates"));
+                Environment.SetEnvironmentVariable("GIT_SSL_CAINFO", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputZipDirectory, "ca/ca.pem"));
             }
 
             return;
+        }
+
+        private static string PathEnvironmentSeparator = OperatingSystem.IsWindows() ? ";" : ":";
+
+        private static void SetToPahtVariable(string newDirectory)
+        {
+            string currentPath = Environment.GetEnvironmentVariable("PATH") ?? "";
+
+            Environment.SetEnvironmentVariable("PATH", newDirectory + PathEnvironmentSeparator + currentPath);
         }
 
 #warning Description
@@ -235,7 +251,7 @@ namespace Chris82111.LibCsharpStaticGitCollection
 
             process.WaitForExit();
 
-            processdResults.ExitCode = processdResults.ExitCode;
+            processdResults.ExitCode = process.ExitCode;
 
             return processdResults;
         }
@@ -276,7 +292,7 @@ namespace Chris82111.LibCsharpStaticGitCollection
 
             await process.WaitForExitAsync();
 
-            processdResults.ExitCode = processdResults.ExitCode;
+            processdResults.ExitCode = process.ExitCode;
 
             return processdResults;
         }
