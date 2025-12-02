@@ -19,6 +19,15 @@
 
 </div>
 
+> [!WARNING]
+> The repository can be used as is to run on Linux and Windows.  
+> There are problems with the created executable static version of Git.  
+> Please note the section [#License](#license).  
+> There are problems with different licenses of the individual components.  
+> Distributing the code in this way is not a problem, and in my opinion,  
+> compiling it yourself is also not a problem.  
+> However, the executable file that is created may not be redistributed.
+
 ## Update 
 
 The version of Git for Windows (MinGit) can be specified in the file [GitLinux.props](LibCsharpStaticGitCollection/Lib/GitLinux.props).
@@ -84,10 +93,10 @@ Here is a list of common mistakes:
         If it prints a line like `docker:x:AnyNumer:` then the group exists.  
         If it prints nothing, the group does not exist.  
 
-   1.1. Only create a group if it does not exist; sudo is required:  
+   1.2. Only create a group if it does not exist; sudo is required:  
         `if ! getent group docker > /dev/null ; then sudo groupadd docker ; fi`  
 
-   1.2. Add your user to the docker group:  
+   1.3. Add your user to the docker group:  
         `sudo usermod -aG docker $USER`
 
    Then log out and back in (or reboot) so the group takes effect.
@@ -111,3 +120,27 @@ There are various ways to disable individual functions during the build:
 3. An environment variable can override the properties
 4. A custom property can override the properties:  
    `dotnet build -c Debug -p:EnableStaticGitUseLinux=false -p:EnableStaticGitUseWindows=false`
+
+## License
+
+This repository has the MIT license, but it uses many other projects, each of which has its own license that must be observed.
+
+### License Static Git For Linux 
+
+- Build stage (3): Zlib ([zlib](https://zlib.net/zlib_license.html))
+- Build stage (4): Apache-2.0 ([OpenSSL](https://github.com/openssl/openssl?tab=Apache-2.0-1-ov-file#readme))
+- Build stage (5): MIT ([libpsl](https://github.com/rockdaboot/libpsl/blob/master/LICENSE))
+- Build stage (6): MIT/X derivative license ([libcurl](https://curl.se/docs/faq.html#License-Issues))
+- Build stage (7): GPL-2.0 ([Git](https://git-scm.com/about#free-and-open-source))
+
+More about license: [licensing-a-repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository).
+
+> [!CAUTION]
+> After creating a compiled and linked version, the license changes accordingly.  
+> The GPL-2.0 and Apache-2.0 licenses cannot be combined!
+
+GPL-3.0 is a combination of both. However, it is important to emphasize here that GPL-2.0 is restricted by GPL-3.0 and only the author and contributors may impose these restrictions.
+
+### License Portable Windows
+
+- Download: GPL-2.0 ([Git for Windows](https://github.com/git-for-windows/git?tab=License-1-ov-file#readme))

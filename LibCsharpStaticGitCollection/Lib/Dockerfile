@@ -42,12 +42,12 @@
 
 FROM ubuntu:24.04 AS base_stage
 
-# (3) Build static zlib
+# (3) Build zlib
 # Update: https://zlib.net/
 ENV zlibUrl="https://zlib.net/zlib-1.3.1.tar.gz"
 ENV zlibSha256="9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23"
 
-# (4) Build static OpenSSL
+# (4) Build OpenSSL
 # Update: https://github.com/openssl/openssl/releases
 ENV openSslUrl="https://github.com/openssl/openssl/releases/download/openssl-3.5.4/openssl-3.5.4.tar.gz"
 ENV openSslSha256="967311f84955316969bdb1d8d4b983718ef42338639c621ec4c34fddef355e99"
@@ -62,7 +62,7 @@ ENV libpslSha256="1dcc9ceae8b128f3c0b3f654decd0e1e891afc6ff81098f227ef260449dae2
 ENV libcurlUrl="https://curl.se/download/curl-8.17.0.tar.gz"
 ENV libcurlSha256="e8e74cdeefe5fb78b3ae6e90cd542babf788fa9480029cfcee6fd9ced42b7910"
 
-# (7) Git
+# (7) Build Git
 # Update: https://git-scm.com/install/source
 ENV gitUrl="https://www.kernel.org/pub/software/scm/git/git-2.51.2.tar.gz"
 ENV gitSha256="9b44c2b337ec838e10aad42439d390963904449710d30c9e7e4ba449f45da98f"
@@ -81,7 +81,7 @@ RUN apt-get update -y && apt-get install -y \
 
 
 #------------------------------------------------------------------------------
-### (3) Build static zlib
+### (3) Build zlib
 #------------------------------------------------------------------------------
 
 FROM build_stage AS zlib_stage
@@ -112,7 +112,7 @@ RUN \
 
 
 #------------------------------------------------------------------------------
-### (4) Build static OpenSSL
+### (4) Build OpenSSL
 #------------------------------------------------------------------------------
 
 FROM build_stage AS openssl_stage
@@ -248,7 +248,7 @@ RUN \
 
 
 #------------------------------------------------------------------------------
-### (7) Git
+### (7) Build Git
 #------------------------------------------------------------------------------
 
 FROM build_stage AS git_stage
