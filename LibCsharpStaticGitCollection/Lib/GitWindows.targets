@@ -1,17 +1,38 @@
 <Project>
   
-  <ItemGroup Condition="Exists('$(GitWindowsZipFileFull)') And 'true' == '$(EnableStaticGitUseWindows)'" >
-    <GitWindowsFiles Include="$(GitWindowsZipFileFull)" />
-    <Content Include="@(GitWindowsFiles)" AutoGen="true" >
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+  <Target Name="GitWindowsPropertyGroup"
+    BeforeTargets="BeforeBuild" >
+    
+    <PropertyGroup>
+      
+      <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/runtime/win-x64/native/mingit -->
+      <GitWindowsZipDirectory>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(GitWindowsZipRelativeRuntime)'))</GitWindowsZipDirectory>
+      
+      <!--
+      The `GitWindowsZipDirectory` variable is located in a `Target`/`PropertyGroup`,
+      as this makes it possible to use the build variable `IntermediateOutputPath`.
+      This allows the directory to be moved to the intermediate folder.
+      Currently, the `None` tag does not offer any option to customize the output path.
+      For this reason, the runtime folder is located in `MSBuildProjectDirectory`,
+      so that exactly this path is copied to the output directory `OutputPath`.
+      
+      A `Copy` tag to copy the content cannot be used in this project.
+      This project should also offer the option of being integrated from another
+      project as a reference, and `Copy` would then not copy the content.
+      
+      The attributes `TargetPath`, `Link`, `LinkBase`, and `DestinationSubDirectory`
+      could not change the output path.
+      -->
+    
+    </PropertyGroup>
+  
+  </Target>
   
   <Target Name="GitWindowsZipDownload"
-    BeforeTargets="BeforeBuild"
+    AfterTargets="GitWindowsPropertyGroup"
     Outputs="$(GitWindowsZipFileFull)"
     Condition="!Exists('$(GitWindowsZipFileFull)') And 'true' == '$(EnableStaticGitUseWindows)'" >
-  
+    
     <Message Text="Git Windows: Download ZIP" Importance="High" />
     
     <DownloadFile
@@ -38,16 +59,65 @@
       Text="Git Windows: Error: ZIP hash does not match expected SHA256 hash!" />
     
     <Move SourceFiles="$(GitWindowsZipFileUncheckedFull)" DestinationFiles="$(GitWindowsZipFileFull)" />
+  
+  </Target>
+  
+  <Target Name="GitWindowsZipExtract"
+    AfterTargets="GitWindowsZipDownload"
+    Outputs="$(GitWindowsZipDirectory)"
+    Condition="!Exists('$(GitWindowsZipDirectory)') And 'true' == '$(EnableStaticGitUseWindows)'" >
+    
+    <Message Text="Git Windows: Extract ZIP" Importance="High" />
+    
+    <!-- Ensure extract directory exists -->
+    <MakeDir
+      Condition="!Exists('$(GitWindowsZipDirectory)')"
+      Directories="$(GitWindowsZipDirectory)" />
+    
+    <Unzip
+      SourceFiles="$(GitWindowsZipFileFull)"
+      DestinationFolder="$(GitWindowsZipDirectory)"
+      SkipUnchangedFiles="true" />
+  
+  </Target>
+  
+  <Target Name="GitWindowsZipIncludeNugetAndLocal"
+    AfterTargets="GitWindowsZipExtract"
+    Condition="'true' == '$(EnableStaticGitUseWindows)' And 'true' == '$(UseGitWindows)'" >
+    
+    <Message Text="Git Windows: Include directory NuGet and Local" Importance="High" />
     
     <ItemGroup>
-      <GitWindowsFiles Include="$(GitWindowsZipFileFull)" />
-      <Content Include="@(GitWindowsFiles)" AutoGen="true" >
+      
+      <None
+        Include="$(GitWindowsZipDirectory)/**"
+        Pack="true"
+        PackagePath="$(GitWindowsZipRelativeRuntime)" >
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
+      </None>
+    
     </ItemGroup>
   
   </Target>
-
+  
+  <Target Name="GitWindowsZipIncludeNuget"
+    AfterTargets="GitWindowsZipIncludeNugetAndLocal"
+    Condition="'true' == '$(EnableStaticGitUseWindows)' And 'false' == '$(UseGitWindows)'" >
+    
+    <Message Text="Git Windows: Include directory NuGet only" Importance="High" />
+    
+    <ItemGroup>
+      
+      <None
+        Include="$(GitWindowsZipDirectory)/**"
+        Pack="true"
+        PackagePath="$(GitWindowsZipRelativeRuntime)" >
+      </None>
+    
+    </ItemGroup>
+  
+  </Target>
+  
   <Target Name="GitWindowsGeneratePath" BeforeTargets="BeforeCompile">
     
     <WriteLinesToFile
@@ -64,9 +134,6 @@ namespace Chris82111.LibCsharpStaticGitCollection.Lib
     {
         public const string GitWindowsUrl = @"$(GitWindowsUrl)"%3B
         public const string GitWindowsExpectedHash = "$(GitWindowsExpectedHash)"%3B
-        public const string GitWindowsRelativeOutputDirectory = @"$(GitWindowsRelativeOutputDirectory.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
-        public const string GitWindowsRelativeOutputZipFile = @"$(GitWindowsRelativeOutputZipFile.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
-        public const string GitWindowsRelativeOutputZipDirectory = @"$(GitWindowsRelativeOutputZipDirectory.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
         public const string GitWindowsRelativeOutputExecutable = @"$(GitWindowsRelativeOutputExecutable.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
     }
 }

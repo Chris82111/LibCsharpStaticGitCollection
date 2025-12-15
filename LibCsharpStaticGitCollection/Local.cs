@@ -60,14 +60,14 @@ namespace Chris82111.LibCsharpStaticGitCollection
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                if (false == Directory.Exists(GitWindowsLib.GitWindowsRelativeOutputZipDirectory))
-                {
-                    await Task.Run(() => 
-                    ZipFile.ExtractToDirectory(
-                        GitWindowsLib.GitWindowsRelativeOutputZipFile, 
-                        GitWindowsLib.GitWindowsRelativeOutputZipDirectory,
-                        overwriteFiles: true));
-		        }
+          //      if (false == Directory.Exists(GitWindowsLib.GitWindowsRelativeOutputZipDirectory))
+          //      {
+          //          await Task.Run(() => 
+          //          ZipFile.ExtractToDirectory(
+          //              GitWindowsLib.GitWindowsRelativeOutputZipFile, 
+          //              GitWindowsLib.GitWindowsRelativeOutputZipDirectory,
+          //              overwriteFiles: true));
+		        //}
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -99,12 +99,15 @@ namespace Chris82111.LibCsharpStaticGitCollection
             Environment.SetEnvironmentVariable("PATH", newDirectory + PathEnvironmentSeparator + currentPath);
         }
 
+        public static string BaseDirectory { get; } = AppDomain.CurrentDomain.BaseDirectory;
+
 #warning Description
         public static string? GitCommandStaticWindows { get; } = GitCommandStaticWindowsInit();
 
+
         private static string? GitCommandStaticWindowsInit()
         {
-            var fileInfo = new FileInfo(GitWindowsLib.GitWindowsRelativeOutputExecutable);
+            var fileInfo = new FileInfo(Path.Combine(BaseDirectory, GitWindowsLib.GitWindowsRelativeOutputExecutable));
             if (fileInfo.Exists)
             {
                 return fileInfo.FullName;

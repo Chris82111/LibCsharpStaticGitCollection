@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibCsharpStaticGitCollectio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibCsharpStaticGitCollection.TestConsoleApp", "LibCsharpStaticGitCollection.TestConsoleApp\LibCsharpStaticGitCollection.TestConsoleApp.csproj", "{F9B47BFB-4F96-40CA-A242-CD0854D75823}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibCsharpStaticGitCollection.TestConsoleAppNuget", "LibCsharpStaticGitCollection.TestConsoleAppNuget\LibCsharpStaticGitCollection.TestConsoleAppNuget.csproj", "{B1AF6797-0DC4-4D3A-8BB6-1DD07B85A930}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{F9B47BFB-4F96-40CA-A242-CD0854D75823}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9B47BFB-4F96-40CA-A242-CD0854D75823}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F9B47BFB-4F96-40CA-A242-CD0854D75823}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1AF6797-0DC4-4D3A-8BB6-1DD07B85A930}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1AF6797-0DC4-4D3A-8BB6-1DD07B85A930}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1AF6797-0DC4-4D3A-8BB6-1DD07B85A930}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1AF6797-0DC4-4D3A-8BB6-1DD07B85A930}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
