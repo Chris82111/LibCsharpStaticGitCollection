@@ -466,10 +466,12 @@ ENV LD_LIBRARY_PATH="/opt/curl/lib:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 RUN make configure
 
 RUN ./configure \
+  --prefix=/opt/git \
   --with-curl=/opt/curl \
   --with-openssl=/opt/openssl \
-  --prefix=/opt/git \
-  CFLAGS="-I/opt/zlib/include -I/opt/libpsl/include" \
+  --without-expat \
+  NO_TCLTK=YesPlease \
+  CFLAGS="-O2 -g0 -I/opt/zlib/include -I/opt/libpsl/include" \
   LDFLAGS="-L/opt/zlib/lib -L/opt/libpsl/lib -Wl,-Bstatic -lz -lpsl \
            -Wl,-Bdynamic -L/opt/curl/lib -L/opt/openssl/lib64 -lcurl -lssl -lcrypto -ldl -lpthread"
 
@@ -480,6 +482,11 @@ RUN make install \
   NO_INSTALL_HARDLINKS=YesPlease \
   prefix=/opt/git
 
+RUN \
+  find /opt/git -type f -exec sh -c \
+    'file "$1" | grep -q ELF && strip "$1" || true' _ {} \; \
+  && find /opt/git -name "*.a" -delete \
+  && rm -rf /opt/git/share
 
 RUN \
   mkdir -p /opt/git/ca && \
