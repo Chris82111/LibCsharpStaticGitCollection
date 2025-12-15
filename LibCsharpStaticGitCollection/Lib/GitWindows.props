@@ -20,20 +20,20 @@
     
     <!-- The Runtime Identifier (RID) is set by `RuntimeIdentifier` tag in *.csproj file or via dash `r` or double-dash `runtime` parameter. -->
     <RuntimeIdentifierLower>$([System.String]::Copy('$(RuntimeIdentifier)').ToLower())</RuntimeIdentifierLower>
-	
-	<!-- Checks if RID is "Any", ignoring case. -->
+    
+    <!-- Checks if RID is "Any", ignoring case. -->
     <IsAnyRid>$([System.String]::Equals('$(RuntimeIdentifierLower)','any'))</IsAnyRid>
-	
-	<!-- Checks if RID is empty. -->
+    
+    <!-- Checks if RID is empty. -->
     <IsEmptyRid>$([System.String]::IsNullOrEmpty('$(RuntimeIdentifierLower)'))</IsEmptyRid>
-	
-	<!-- True if it starts with "win" and ends with "-x64", ignoring case. -->
+    
+    <!-- True if it starts with "win" and ends with "-x64", ignoring case. -->
     <IsWindowsX64>$([System.Text.RegularExpressions.Regex]::IsMatch('$(RuntimeIdentifierLower)', '^win.*-x64$' ))</IsWindowsX64>
-	
-	<!-- Determines whether the runtime folder should be created in the output path based on the above conditions.  -->
+    
+    <!-- Determines whether the runtime folder should be created in the output path based on the above conditions.  -->
     <UseGitWindows Condition="'$(IsAnyRid)' == 'True' Or '$(IsEmptyRid)' == 'True' Or '$(IsWindowsX64)' == 'True'" >True</UseGitWindows>
-	<UseGitWindows Condition="'$(UseGitWindows)' == ''">False</UseGitWindows>
-	    
+    <UseGitWindows Condition="'$(UseGitWindows)' == ''">False</UseGitWindows>
+    
     <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib -->
     <GitWindowsLibDirectory>$(MSBuildThisFileDirectory.TrimEnd('/').TrimEnd('\'))</GitWindowsLibDirectory>
     
