@@ -10,51 +10,55 @@ namespace Chris82111.LibCsharpStaticGitCollection
 {
     public static class Local
     {
-        private static async Task DecompressTarGzToTarAsync(string sourceTarGzFilePath, string tarFilePath, bool overwriteFiles = true)
-        {
-            if (false == overwriteFiles && File.Exists(tarFilePath))
-            {
-                throw new IOException($"Cannot create '{tarFilePath}' because a file or directory with the same name already exists.");
-            } 
+        private static string PathEnvironmentSeparator = OperatingSystem.IsWindows() ? ";" : ":";
 
-            await using FileStream original = File.OpenRead(sourceTarGzFilePath);
-            await using FileStream decompressed = File.Create(tarFilePath);
-            await using GZipStream gzip = new GZipStream(original, CompressionMode.Decompress);
+        public static string BaseDirectory { get; } = AppDomain.CurrentDomain.BaseDirectory;
 
-            await gzip.CopyToAsync(decompressed);
-        }
+        //private static async Task DecompressTarGzToTarAsync(string sourceTarGzFilePath, string tarFilePath, bool overwriteFiles = true)
+        //{
+        //    if (false == overwriteFiles && File.Exists(tarFilePath))
+        //    {
+        //        throw new IOException($"Cannot create '{tarFilePath}' because a file or directory with the same name already exists.");
+        //    } 
 
-        private static async Task ExtractTarGzToDirectory(string sourceTarGzFilePath, string? targetDirectory = null, bool overwriteFiles = true)
-        {
-            if (string.IsNullOrEmpty(sourceTarGzFilePath))
-            {
-                throw new ArgumentNullException(nameof(sourceTarGzFilePath));
-            }
+        //    await using FileStream original = File.OpenRead(sourceTarGzFilePath);
+        //    await using FileStream decompressed = File.Create(tarFilePath);
+        //    await using GZipStream gzip = new GZipStream(original, CompressionMode.Decompress);
 
-            if (string.IsNullOrEmpty(targetDirectory))
-            {
-                targetDirectory = ".";
-            }
+        //    await gzip.CopyToAsync(decompressed);
+        //}
 
-            var fileName = Path.GetFileName(sourceTarGzFilePath);
-            if (false == fileName.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException("Invalid file type, only '.tar.gz' is allowed.");
-            }
+        //private static async Task ExtractTarGzToDirectory(string sourceTarGzFilePath, string? targetDirectory = null, bool overwriteFiles = true)
+        //{
+        //    if (string.IsNullOrEmpty(sourceTarGzFilePath))
+        //    {
+        //        throw new ArgumentNullException(nameof(sourceTarGzFilePath));
+        //    }
 
-            string tarFilePath = Path.Combine(targetDirectory, fileName.Substring(0, fileName.Length - 3));
+        //    if (string.IsNullOrEmpty(targetDirectory))
+        //    {
+        //        targetDirectory = ".";
+        //    }
 
-            Directory.CreateDirectory(targetDirectory);
+        //    var fileName = Path.GetFileName(sourceTarGzFilePath);
+        //    if (false == fileName.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
+        //    {
+        //        throw new InvalidOperationException("Invalid file type, only '.tar.gz' is allowed.");
+        //    }
 
-            await DecompressTarGzToTarAsync(sourceTarGzFilePath, tarFilePath, overwriteFiles);
+        //    string tarFilePath = Path.Combine(targetDirectory, fileName.Substring(0, fileName.Length - 3));
 
-            await TarFile.ExtractToDirectoryAsync(
-                tarFilePath,
-                GitLinuxLib.GitLinuxRelativeOutputZipDirectory,
-                overwriteFiles: overwriteFiles);
+        //    Directory.CreateDirectory(targetDirectory);
 
-            File.Delete(tarFilePath);
-        }
+        //    await DecompressTarGzToTarAsync(sourceTarGzFilePath, tarFilePath, overwriteFiles);
+
+        //    await TarFile.ExtractToDirectoryAsync(
+        //        tarFilePath,
+        //        GitLinuxLib.GitLinuxRelativeOutputZipDirectory,
+        //        overwriteFiles: overwriteFiles);
+
+        //    File.Delete(tarFilePath);
+        //}
 
         public static async Task ExtractArchives()
         {
@@ -72,25 +76,46 @@ namespace Chris82111.LibCsharpStaticGitCollection
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                if (false == Directory.Exists(GitLinuxLib.GitLinuxRelativeOutputZipDirectory))
-                {
-                    await ExtractTarGzToDirectory(
-                        GitLinuxLib.GitLinuxRelativeOutputZipFile,
-                        GitLinuxLib.GitLinuxRelativeOutputZipDirectory,
-                        overwriteFiles: true);
-                }
+                //if (false == Directory.Exists(GitLinuxLib.GitLinuxRelativeOutputZipDirectory))
+                //{
+                //    await ExtractTarGzToDirectory(
+                //        GitLinuxLib.GitLinuxRelativeOutputZipFile,
+                //        GitLinuxLib.GitLinuxRelativeOutputZipDirectory,
+                //        overwriteFiles: true);
+                //}
 
-                SetToPahtVariable(GitLinuxLib.GitLinuxRelativeOutputZipDirectory);
-                Environment.SetEnvironmentVariable("GIT_PREFIX", GitLinuxLib.GitLinuxRelativeOutputZipDirectory);
-                Environment.SetEnvironmentVariable("GIT_EXEC_PATH", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputZipDirectory, "libexec/git-core"));
-                Environment.SetEnvironmentVariable("GIT_TEMPLATE_DIR", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputZipDirectory, "share/git-core/templates"));
-                Environment.SetEnvironmentVariable("GIT_SSL_CAINFO", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputZipDirectory, "ca/ca.pem"));
+                SetToPahtVariable(GitLinuxLib.GitLinuxRelativeOutputDirectory);
+                Environment.SetEnvironmentVariable("GIT_PREFIX", GitLinuxLib.GitLinuxRelativeOutputDirectory);
+                Environment.SetEnvironmentVariable("GIT_EXEC_PATH", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "libexec", "git-core"));
+                Environment.SetEnvironmentVariable("GIT_TEMPLATE_DIR", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "share", "git-core", "templates"));
+                Environment.SetEnvironmentVariable("GIT_SSL_CAINFO", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "ca", "ca.pem"));
+
+                SetToVariable("LD_LIBRARY_PATH", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "..", "openssl", "lib64"));
+                SetToVariable("LD_LIBRARY_PATH", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "..", "curl", "lib"));
             }
 
             return;
         }
+        private static void SetToVariable(string variable, string value)
+        {
+            if (string.IsNullOrEmpty(variable))
+            {
+                throw new NullReferenceException($"Variable {nameof(variable)} must not be null or empty");
+            }
 
-        private static string PathEnvironmentSeparator = OperatingSystem.IsWindows() ? ";" : ":";
+            if (string.IsNullOrEmpty(value))
+            {
+                throw new NullReferenceException($"Variable {nameof(value)} must not be null or empty");
+            }
+
+            string? content = Environment.GetEnvironmentVariable(variable);
+
+            content = string.IsNullOrEmpty(content)
+                ? value
+                : value + PathEnvironmentSeparator + content;
+
+            Environment.SetEnvironmentVariable(variable, content);
+        }
 
         private static void SetToPahtVariable(string newDirectory)
         {
@@ -98,8 +123,6 @@ namespace Chris82111.LibCsharpStaticGitCollection
 
             Environment.SetEnvironmentVariable("PATH", newDirectory + PathEnvironmentSeparator + currentPath);
         }
-
-        public static string BaseDirectory { get; } = AppDomain.CurrentDomain.BaseDirectory;
 
 #warning Description
         public static string? GitCommandStaticWindows { get; } = GitCommandStaticWindowsInit();

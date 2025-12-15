@@ -53,7 +53,7 @@
   
   <PropertyGroup Label="GitWindowsRelativeOutput" >
     
-    <!-- bin/MinGit-2.51.2-64-bit/cmd/git.exe -->
+    <!-- runtime/win-x64/native/mingit/cmd/git.exe -->
     <GitWindowsRelativeOutputExecutable>$([System.IO.Path]::Combine('$(GitWindowsZipRelativeRuntime)', '$(GitWindowsZipRelativeExecutable)'))</GitWindowsRelativeOutputExecutable>
   
   </PropertyGroup>

@@ -1,17 +1,19 @@
 <Project>
-  <ItemGroup>
-    <GitLinuxFiles Include="$(GitLinuxZipFileFull)" />
-    <GitLinuxFiles Include="$(GitLinuxSetupEnvironmentFull)" />
-  </ItemGroup>
   
-  <ItemGroup Condition="Exists('$(GitLinuxZipFileFull)') And 'true' == '$(EnableStaticGitUseLinux)'" >
-    <Content Include="@(GitLinuxFiles)" AutoGen="true" >
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+  <Target Name="GitLinuxPropertyGroup"
+    BeforeTargets="BeforeBuild" >
+    
+    <PropertyGroup>
+      
+      <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/runtime/linux-x64/native/git -->
+      <GitLinuxZipDirectory>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(GitLinuxZipRelativeRuntime)'))</GitLinuxZipDirectory>
+    
+    </PropertyGroup>
   
+  </Target>
+    
   <Target Name="GitLinuxBuild"
-    BeforeTargets="BeforeBuild"
+    AfterTargets="GitLinuxPropertyGroup"
     Outputs="$(GitLinuxZipFileFull)"
     Condition="!Exists('$(GitLinuxZipFileFull)') And 'true' == '$(EnableStaticGitUseLinux)'" >
     
@@ -32,10 +34,68 @@
       <!-- Small cleanup -->
       <Exec Command="$(DockerCmd) rm staticgitbuildexporttemp" />
     
+  </Target>
+  
+  <Target Name="GitLinuxZipExtract"
+    AfterTargets="GitLinuxBuild"
+    Outputs="$(GitLinuxZipRelativeRuntime)"
+    Condition="!Exists('$(GitLinuxZipRelativeRuntime)') And 'true' == '$(EnableStaticGitUseLinux)'" >
+    
+    <Message Text="Git Linux  : Extract ZIP" Importance="High" />
+    
+    <!-- Ensure extract directory exists -->
+    <MakeDir
+      Condition="!Exists('$(GitLinuxZipDirectory)')"
+      Directories="$(GitLinuxZipDirectory)" />
+    
     <ItemGroup>
-      <Content Include="@(GitLinuxFiles)" AutoGen="true" >
+      <GitLinuxFiles Include="$(GitLinuxSetupEnvironmentFull)" />
+    </ItemGroup>
+  
+    <Copy
+      SourceFiles="@(GitLinuxFiles)"
+      DestinationFolder="$(GitLinuxZipRelativeRuntime)"
+      SkipUnchangedFiles="true" />
+          
+    <Exec
+      Command="$(UnzipCmd) xzf '$(GitLinuxRelativeZipFile.Replace('\','/'))' -C '$(GitLinuxZipRelativeRuntime.Replace('\','/'))' --strip-components=1"
+      WorkingDirectory="$(MSBuildProjectDirectory)" />
+  
+  </Target>
+  
+   <Target Name="GitLinuxZipIncludeNugetAndLocal"
+    AfterTargets="GitLinuxZipExtract"
+    Condition="'true' == '$(EnableStaticGitUseLinux)' And 'true' == '$(UseGitLinux)'" >
+    
+    <Message Text="Git Linux  : Include directory NuGet and Local" Importance="High" />
+    
+    <ItemGroup>
+      
+      <None
+        Include="$(GitLinuxZipDirectory)/**"
+        Pack="true"
+        PackagePath="$(GitLinuxZipRelativeRuntime)" >
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
+      </None>
+    
+    </ItemGroup>
+  
+  </Target>
+  
+  <Target Name="GitLinuxZipIncludeNuget"
+    AfterTargets="GitLinuxZipIncludeNugetAndLocal"
+    Condition="'true' == '$(EnableStaticGitUseLinux)' And 'false' == '$(UseGitLinux)'" >
+    
+    <Message Text="Git Linux  : Include directory NuGet only" Importance="High" />
+    
+    <ItemGroup>
+      
+      <None
+        Include="$(GitLinuxZipDirectory)/**"
+        Pack="true"
+        PackagePath="$(GitLinuxZipRelativeRuntime)" >
+      </None>
+    
     </ItemGroup>
   
   </Target>
@@ -60,8 +120,6 @@ namespace Chris82111.LibCsharpStaticGitCollection.Lib
     public static class GitLinuxLib
     {
         public const string GitLinuxRelativeOutputDirectory = @"$(GitLinuxRelativeOutputDirectory.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
-        public const string GitLinuxRelativeOutputZipFile = @"$(GitLinuxRelativeOutputZipFile.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
-        public const string GitLinuxRelativeOutputZipDirectory = @"$(GitLinuxRelativeOutputZipDirectory.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
         public const string GitLinuxRelativeOutputExecutable = @"$(GitLinuxRelativeOutputExecutable.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
     }
 }

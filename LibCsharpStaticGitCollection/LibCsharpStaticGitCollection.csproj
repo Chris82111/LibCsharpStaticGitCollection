@@ -16,11 +16,11 @@
   <Import Project="Lib/LibraryConfigOverrides.props" Condition="Exists('Lib/LibraryConfigOverrides.props')" />
   
   <!-- PROPS first -->
+  <Import Project="Lib/GitLinux.props" />
   <Import Project="Lib/GitWindows.props" />
-  <!--Import Project="Lib/GitLinux.props" /-->
   
   <!-- TARGETS last -->
+  <Import Project="Lib/GitLinux.targets" />
   <Import Project="Lib/GitWindows.targets" />
-  <!--Import Project="Lib/GitLinux.targets" /-->
 
 </Project>
