@@ -5,7 +5,7 @@
     <!-- GitLinux.tar.gz -->
     <GitLinuxZipFile>GitLinux.tar.gz</GitLinuxZipFile>
     
-    <!-- runtime/linux-x64/native/git -->
+    <!-- runtimes/linux-x64/native/git -->
     <GitLinuxZipRelativeRuntime>$([System.IO.Path]::Combine('runtimes', 'linux-x64', 'native', 'git'))</GitLinuxZipRelativeRuntime>
     
     <!-- bin/git -->
@@ -47,9 +47,6 @@
     <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib/GitLinux.tar.gz -->
     <GitLinuxZipFileFull>$([System.IO.Path]::Combine('$(GitLinuxLibDirectory)', '$(GitLinuxZipFile)'))</GitLinuxZipFileFull>
     
-    <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib/setup-git-env.sh -->
-    <GitLinuxSetupEnvironmentFull>$([System.IO.Path]::Combine('$(GitLinuxLibDirectory)', '$(GitLinuxSetupEnvironment)'))</GitLinuxSetupEnvironmentFull>
-    
     
     <!-- Lib -->
     <GitLinuxRelativeDirectory>$([System.String]::Copy('$(GitLinuxLibDirectory)').Replace('$(MSBuildProjectDirectory)', '').Trim('/').Trim('\'))</GitLinuxRelativeDirectory>
@@ -71,10 +68,10 @@
   
   <PropertyGroup Label="GitLinuxRelativeOutput" >
     
-    <!-- runtime/linux-x64/native/git -->
+    <!-- runtimes/linux-x64/native/git -->
     <GitLinuxRelativeOutputDirectory>$(GitLinuxZipRelativeRuntime)</GitLinuxRelativeOutputDirectory>
     
-    <!-- runtime/linux-x64/native/git/cmd/git.exe -->
+    <!-- runtimes/linux-x64/native/git/cmd/git.exe -->
     <GitLinuxRelativeOutputExecutable>$([System.IO.Path]::Combine('$(GitLinuxZipRelativeRuntime)', '$(GitLinuxZipRelativeExecutable)'))</GitLinuxRelativeOutputExecutable>
   
   </PropertyGroup>

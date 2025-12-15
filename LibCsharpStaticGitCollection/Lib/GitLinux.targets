@@ -5,7 +5,7 @@
     
     <PropertyGroup>
       
-      <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/runtime/linux-x64/native/git -->
+      <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/runtimes/linux-x64/native/git -->
       <GitLinuxZipDirectory>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(GitLinuxZipRelativeRuntime)'))</GitLinuxZipDirectory>
     
     </PropertyGroup>
@@ -51,11 +51,6 @@
     <ItemGroup>
       <GitLinuxFiles Include="$(GitLinuxSetupEnvironmentFull)" />
     </ItemGroup>
-  
-    <Copy
-      SourceFiles="@(GitLinuxFiles)"
-      DestinationFolder="$(GitLinuxZipRelativeRuntime)"
-      SkipUnchangedFiles="true" />
           
     <Exec
       Command="$(UnzipCmd) xzf '$(GitLinuxRelativeZipFile.Replace('\','/'))' -C '$(GitLinuxZipRelativeRuntime.Replace('\','/'))' --strip-components=1"
@@ -103,6 +98,8 @@
   <Target Name="GitLinuxCleanup" BeforeTargets="Clean" >
     <Exec Command="$(DockerCmd) rmi staticgitbuildtempimage" IgnoreExitCode="true" />
     <Exec Command="$(DockerCmd) system prune -f" IgnoreExitCode="true" />
+    <RemoveDir Directories="$(GitLinuxZipRelativeRuntime)" />
+    <!-- `GitLinux.tar.gz` is not removed; it is assumed that the exported file is error-free. -->
   </Target>
   
   <Target Name="GitLinuxGeneratePath" BeforeTargets="BeforeCompile" >

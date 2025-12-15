@@ -8,6 +8,7 @@
 # docker build --progress=plain -t tempimage .
 
 # Debug
+# docker build --progress=plain --target test_72_stage -t tempimage .
 # docker run -it tempimage bash
 
 # Export
@@ -472,9 +473,11 @@ RUN ./configure \
   LDFLAGS="-L/opt/zlib/lib -L/opt/libpsl/lib -Wl,-Bstatic -lz -lpsl \
            -Wl,-Bdynamic -L/opt/curl/lib -L/opt/openssl/lib64 -lcurl -lssl -lcrypto -ldl -lpthread"
 
-RUN make all
+RUN make \
+  NO_INSTALL_HARDLINKS=YesPlease
 
 RUN make install \
+  NO_INSTALL_HARDLINKS=YesPlease \
   prefix=/opt/git
 
 
@@ -563,15 +566,14 @@ RUN \
 FROM base_stage AS test_72_stage
 
 COPY --from=git_stage /opt/git /opt/my/test/git
-COPY --from=libcurl_stage /opt/curl /opt/my/test/curl
-COPY --from=openssl_stage /opt/openssl /opt/my/test/openssl
+COPY --from=libcurl_stage /opt/curl /opt/my/test/git/curl
+COPY --from=openssl_stage /opt/openssl /opt/my/test/git/openssl
+ADD setup-git-env.sh /opt/my/test/git
 
 WORKDIR /build/git-test
 
-ADD setup-git-env.sh /opt/my/test/git
-
 RUN bash -c "\
-    source /opt/my/test/git/setup-git-env.sh --no_extract && \
+    source /opt/my/test/git/setup-git-env.sh && \
     git --version || { \
         echo 'ERROR: git command failed'; \
         exit 1; \
@@ -579,7 +581,7 @@ RUN bash -c "\
 "
 
 RUN bash -c "\
-    source /opt/my/test/git/setup-git-env.sh --no_extract && \
+    source /opt/my/test/git/setup-git-env.sh && \
     git clone https://github.com/Chris82111/LibCsharpStaticGitCollection.git || { \
         echo 'ERROR: git clone ... command failed'; \
         exit 1; \
@@ -606,8 +608,9 @@ RUN \
 FROM base_stage
 
 COPY --from=git_stage /opt/git /opt/git
-COPY --from=libcurl_stage /opt/curl /opt/curl
-COPY --from=openssl_stage /opt/openssl /opt/openssl
+COPY --from=libcurl_stage /opt/curl /opt/git/curl
+COPY --from=openssl_stage /opt/openssl /opt/git/openssl
+ADD setup-git-env.sh /opt/git
 
 # The file `setup-git-env.sh` sets the following variables. 
 # You can use the script or do this yourself:
@@ -617,8 +620,8 @@ COPY --from=openssl_stage /opt/openssl /opt/openssl
 # export GIT_EXEC_PATH="/opt/git/libexec/git-core"
 # export GIT_TEMPLATE_DIR="/opt/git/share/git-core/templates/"
 # export GIT_SSL_CAINFO="/opt/git/ca/ca.pem"
-# export LD_LIBRARY_PATH="/opt/git/../openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
-# export LD_LIBRARY_PATH="/opt/git/../curl/lib:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
+# export LD_LIBRARY_PATH="/opt/git/openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
+# export LD_LIBRARY_PATH="/opt/git/curl/lib:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 
 # WORKDIR /opt/git
 # RUN find . -type f -perm -111 -exec sh -c 'file "$0" | grep -q ELF && strip "$0"' {} \;

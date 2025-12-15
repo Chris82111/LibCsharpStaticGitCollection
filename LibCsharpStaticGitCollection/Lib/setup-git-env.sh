@@ -46,30 +46,14 @@ fi
 
 SCRIPT_DIR=$(cd "$(dirname "${SCRIPT_PATH}")" && pwd) || return 2
 
-# Required folders
-REQUIRED="bin ca libexec share"
-
-ALL_EXIST=1
-for f in $REQUIRED; do
-    if [ ! -d "$f" ]; then
-        ALL_EXIST=0
-        break
-    fi
-done
-
-# Extract if needed (unless --no_extract passed)
-if [ "${ALL_EXIST}" -eq 0 ] && [ "$1" != "--no_extract" ]; then
-    tar xzf "GitLinux.tar.gz"
-fi
-
 # Export environment variables
 PATH="${SCRIPT_DIR}/bin:$PATH"
 GIT_PREFIX="${SCRIPT_DIR}"
 GIT_EXEC_PATH="${SCRIPT_DIR}/libexec/git-core"
 GIT_TEMPLATE_DIR="${SCRIPT_DIR}/share/git-core/templates"
 GIT_SSL_CAINFO="${SCRIPT_DIR}/ca/ca.pem"
-LD_LIBRARY_PATH="${SCRIPT_DIR}/../openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
-LD_LIBRARY_PATH="${SCRIPT_DIR}/../curl/lib:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
+LD_LIBRARY_PATH="${SCRIPT_DIR}/openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
+LD_LIBRARY_PATH="${SCRIPT_DIR}/curl/lib:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 
 export PATH GIT_PREFIX GIT_EXEC_PATH GIT_TEMPLATE_DIR GIT_SSL_CAINFO LD_LIBRARY_PATH
 

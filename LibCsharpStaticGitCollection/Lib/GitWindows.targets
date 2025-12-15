@@ -5,7 +5,7 @@
     
     <PropertyGroup>
       
-      <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/runtime/win-x64/native/mingit -->
+      <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/runtimes/win-x64/native/mingit -->
       <GitWindowsZipDirectory>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(GitWindowsZipRelativeRuntime)'))</GitWindowsZipDirectory>
       
       <!--
@@ -13,7 +13,7 @@
       as this makes it possible to use the build variable `IntermediateOutputPath`.
       This allows the directory to be moved to the intermediate folder.
       Currently, the `None` tag does not offer any option to customize the output path.
-      For this reason, the runtime folder is located in `MSBuildProjectDirectory`,
+      For this reason, the runtimes folder is located in `MSBuildProjectDirectory`,
       so that exactly this path is copied to the output directory `OutputPath`.
       
       A `Copy` tag to copy the content cannot be used in this project.
@@ -116,6 +116,11 @@
     
     </ItemGroup>
   
+  </Target>
+  
+  <Target Name="GitWindowsCleanup" BeforeTargets="Clean" >
+    <RemoveDir Directories="$(GitWindowsZipRelativeRuntime)" ContinueOnError="WarnAndContinue" />
+    <!-- `MinGit-2.51.2-64-bit.zip` is not removed; it is assumed that the downloaded file is error-free. -->
   </Target>
   
   <Target Name="GitWindowsGeneratePath" BeforeTargets="BeforeCompile">
