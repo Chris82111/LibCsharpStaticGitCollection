@@ -84,14 +84,14 @@ namespace Chris82111.LibCsharpStaticGitCollection
                 //        overwriteFiles: true);
                 //}
 
-                SetToPahtVariable(GitLinuxLib.GitLinuxRelativeOutputDirectory);
-                Environment.SetEnvironmentVariable("GIT_PREFIX", GitLinuxLib.GitLinuxRelativeOutputDirectory);
-                Environment.SetEnvironmentVariable("GIT_EXEC_PATH", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "libexec", "git-core"));
-                Environment.SetEnvironmentVariable("GIT_TEMPLATE_DIR", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "share", "git-core", "templates"));
-                Environment.SetEnvironmentVariable("GIT_SSL_CAINFO", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "ca", "ca.pem"));
+                //SetToPahtVariable(GitLinuxLib.GitLinuxRelativeOutputDirectory);
+                //Environment.SetEnvironmentVariable("GIT_PREFIX", GitLinuxLib.GitLinuxRelativeOutputDirectory);
+                //Environment.SetEnvironmentVariable("GIT_EXEC_PATH", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "libexec", "git-core"));
+                //Environment.SetEnvironmentVariable("GIT_TEMPLATE_DIR", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "share", "git-core", "templates"));
+                //Environment.SetEnvironmentVariable("GIT_SSL_CAINFO", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "ca", "ca.pem"));
 
-                SetToVariable("LD_LIBRARY_PATH", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "..", "openssl", "lib64"));
-                SetToVariable("LD_LIBRARY_PATH", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "..", "curl", "lib"));
+                //SetToVariable("LD_LIBRARY_PATH", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "..", "openssl", "lib64"));
+                //SetToVariable("LD_LIBRARY_PATH", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "..", "curl", "lib"));
             }
 
             return;
@@ -130,11 +130,11 @@ namespace Chris82111.LibCsharpStaticGitCollection
 
         private static string? GitCommandStaticWindowsInit()
         {
-            var fileInfo = new FileInfo(Path.Combine(BaseDirectory, GitWindowsLib.GitWindowsRelativeOutputExecutable));
-            if (fileInfo.Exists)
-            {
-                return fileInfo.FullName;
-            }
+            //var fileInfo = new FileInfo(Path.Combine(BaseDirectory, GitWindowsLib.GitWindowsRelativeOutputExecutable));
+            //if (fileInfo.Exists)
+            //{
+            //    return fileInfo.FullName;
+            //}
             return null;
         }
 
@@ -142,11 +142,11 @@ namespace Chris82111.LibCsharpStaticGitCollection
 
         private static string? GitCommandStaticLinuxInit()
         {
-            var fileInfo = new FileInfo(GitLinuxLib.GitLinuxRelativeOutputExecutable);
-            if (fileInfo.Exists)
-            {
-                return fileInfo.FullName;
-            }
+            //var fileInfo = new FileInfo(GitLinuxLib.GitLinuxRelativeOutputExecutable);
+            //if (fileInfo.Exists)
+            //{
+            //    return fileInfo.FullName;
+            //}
             return null;
         }
 

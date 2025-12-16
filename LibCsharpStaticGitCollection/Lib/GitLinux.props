@@ -5,11 +5,11 @@
     <!-- GitLinux.tar.gz -->
     <GitLinuxZipFile>GitLinux.tar.gz</GitLinuxZipFile>
     
-    <!-- runtimes/linux-x64/native/git -->
-    <GitLinuxZipRelativeRuntime>$([System.IO.Path]::Combine('runtimes', 'linux-x64', 'native', 'git'))</GitLinuxZipRelativeRuntime>
+    <!-- runtimes/linux-x64/native -->
+    <GitLinuxRuntimeDirectory>$([System.IO.Path]::Combine('runtimes', 'linux-x64', 'native'))</GitLinuxRuntimeDirectory>
     
     <!-- bin/git -->
-    <GitLinuxZipRelativeExecutable>$([System.IO.Path]::Combine('bin', 'git'))</GitLinuxZipRelativeExecutable>
+    <GitLinuxExecutableRelative>$([System.IO.Path]::Combine('bin', 'git'))</GitLinuxExecutableRelative>
     
     <!-- setup-git-env.sh -->
     <GitLinuxSetupEnvironment>setup-git-env.sh</GitLinuxSetupEnvironment>
@@ -41,21 +41,15 @@
     <UseGitLinux Condition="'$(IsAnyRid)' == 'True' Or '$(IsEmptyRid)' == 'True' Or '$(IsLinuxX64)' == 'True'" >True</UseGitLinux>
     <UseGitLinux Condition="'$(UseGitLinux)' == ''">False</UseGitLinux>
     
+    
+    <!-- runtimes/linux-x64/native/GitLinux.tar.gz -->
+    <GitLinuxZipFileRelative>$([System.IO.Path]::Combine('$(GitLinuxRuntimeDirectory)', '$(GitLinuxZipFile)'))</GitLinuxZipFileRelative>
+    
     <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib -->
-    <GitLinuxLibDirectory>$(MSBuildThisFileDirectory.TrimEnd('/').TrimEnd('\'))</GitLinuxLibDirectory>
-    
-    <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib/GitLinux.tar.gz -->
-    <GitLinuxZipFileFull>$([System.IO.Path]::Combine('$(GitLinuxLibDirectory)', '$(GitLinuxZipFile)'))</GitLinuxZipFileFull>
-    
+    <GitLinuxLibDirectoryFull>$(MSBuildThisFileDirectory.TrimEnd('/').TrimEnd('\'))</GitLinuxLibDirectoryFull>
     
     <!-- Lib -->
-    <GitLinuxRelativeDirectory>$([System.String]::Copy('$(GitLinuxLibDirectory)').Replace('$(MSBuildProjectDirectory)', '').Trim('/').Trim('\'))</GitLinuxRelativeDirectory>
-    
-    <!-- Lib/GitLinux.tar.gz -->
-    <GitLinuxRelativeZipFile>$([System.IO.Path]::Combine('$(GitLinuxRelativeDirectory)', '$(GitLinuxZipFile)'))</GitLinuxRelativeZipFile>
-    
-    <!-- GitLinux -->
-    <GitLinuxBaseName>$(GitLinuxZipFile.Replace('.tar.gz',''))</GitLinuxBaseName>
+    <GitLinuxLibDirectory>$([System.String]::Copy('$(GitLinuxLibDirectoryFull)').Replace('$(MSBuildProjectDirectory)', '').Trim('/').Trim('\'))</GitLinuxLibDirectory>
     
     
     <DockerCmd Condition="'$(OS)' == 'Windows_NT'">wsl docker</DockerCmd>
@@ -68,12 +62,12 @@
   
   <PropertyGroup Label="GitLinuxRelativeOutput" >
     
-    <!-- runtimes/linux-x64/native/git -->
-    <GitLinuxRelativeOutputDirectory>$(GitLinuxZipRelativeRuntime)</GitLinuxRelativeOutputDirectory>
+    <!-- runtimes/linux-x64/native/GitLinux.tar.gz -->
+    <GitLinuxOutputZipFileRelative>$(GitLinuxZipFileRelative)</GitLinuxOutputZipFileRelative>
     
-    <!-- runtimes/linux-x64/native/git/cmd/git.exe -->
-    <GitLinuxRelativeOutputExecutable>$([System.IO.Path]::Combine('$(GitLinuxZipRelativeRuntime)', '$(GitLinuxZipRelativeExecutable)'))</GitLinuxRelativeOutputExecutable>
-  
+    <!-- bin/git -->
+    <GitLinuxOutputExecutableRelative>$(GitLinuxExecutableRelative)</GitLinuxOutputExecutableRelative>
+    
   </PropertyGroup>
 
 </Project>

@@ -4,25 +4,6 @@
     BeforeTargets="BeforeBuild" >
     
     <PropertyGroup>
-      
-      <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/runtimes/win-x64/native/mingit -->
-      <GitWindowsZipDirectory>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(GitWindowsZipRelativeRuntime)'))</GitWindowsZipDirectory>
-      
-      <!--
-      The `GitWindowsZipDirectory` variable is located in a `Target`/`PropertyGroup`,
-      as this makes it possible to use the build variable `IntermediateOutputPath`.
-      This allows the directory to be moved to the intermediate folder.
-      Currently, the `None` tag does not offer any option to customize the output path.
-      For this reason, the runtimes folder is located in `MSBuildProjectDirectory`,
-      so that exactly this path is copied to the output directory `OutputPath`.
-      
-      A `Copy` tag to copy the content cannot be used in this project.
-      This project should also offer the option of being integrated from another
-      project as a reference, and `Copy` would then not copy the content.
-      
-      The attributes `TargetPath`, `Link`, `LinkBase`, and `DestinationSubDirectory`
-      could not change the output path.
-      -->
     
     </PropertyGroup>
   
@@ -30,22 +11,22 @@
   
   <Target Name="GitWindowsZipDownload"
     AfterTargets="GitWindowsPropertyGroup"
-    Outputs="$(GitWindowsZipFileFull)"
-    Condition="!Exists('$(GitWindowsZipFileFull)') And 'true' == '$(EnableStaticGitUseWindows)'" >
+    Outputs="$(GitWindowsZipFileRelative)"
+    Condition="!Exists('$(GitWindowsZipFileRelative)') And 'true' == '$(EnableStaticGitUseWindows)'" >
     
     <Message Text="Git Windows: Download ZIP" Importance="High" />
     
     <DownloadFile
-      Condition="!Exists('$(GitWindowsZipFileFull)')"
+      Condition="!Exists('$(GitWindowsZipFileUncheckedRelative)')"
       SkipUnchangedFiles="true"
       SourceUrl="$(GitWindowsUrl)"
-      DestinationFolder="$(GitWindowsLibDirectory)"
+      DestinationFolder="$(GitWindowsRuntimeDirectory)"
       DestinationFileName="$(GitWindowsZipFileUnchecked)" >
       <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
     
     <GetFileHash
-      Files="$(GitWindowsZipFileUncheckedFull)" 
+      Files="$(GitWindowsZipFileUncheckedRelative)" 
       Algorithm="SHA256" >
       <Output TaskParameter="Hash" ItemName="GitWindowsActualHashInfo" />
     </GetFileHash>
@@ -53,36 +34,17 @@
     <PropertyGroup>
       <GitWindowsActualHash>@(GitWindowsActualHashInfo)</GitWindowsActualHash>
     </PropertyGroup>
-    
+
     <Error
       Condition="'$(GitWindowsActualHash)' != '$(GitWindowsExpectedHash)'"
       Text="Git Windows: Error: ZIP hash does not match expected SHA256 hash!" />
     
-    <Move SourceFiles="$(GitWindowsZipFileUncheckedFull)" DestinationFiles="$(GitWindowsZipFileFull)" />
-  
-  </Target>
-  
-  <Target Name="GitWindowsZipExtract"
-    AfterTargets="GitWindowsZipDownload"
-    Outputs="$(GitWindowsZipDirectory)"
-    Condition="!Exists('$(GitWindowsZipDirectory)') And 'true' == '$(EnableStaticGitUseWindows)'" >
-    
-    <Message Text="Git Windows: Extract ZIP" Importance="High" />
-    
-    <!-- Ensure extract directory exists -->
-    <MakeDir
-      Condition="!Exists('$(GitWindowsZipDirectory)')"
-      Directories="$(GitWindowsZipDirectory)" />
-    
-    <Unzip
-      SourceFiles="$(GitWindowsZipFileFull)"
-      DestinationFolder="$(GitWindowsZipDirectory)"
-      SkipUnchangedFiles="true" />
+    <Move SourceFiles="$(GitWindowsZipFileUncheckedRelative)" DestinationFiles="$(GitWindowsZipFileRelative)" />
   
   </Target>
   
   <Target Name="GitWindowsZipIncludeNugetAndLocal"
-    AfterTargets="GitWindowsZipExtract"
+    AfterTargets="GitWindowsZipDownload"
     Condition="'true' == '$(EnableStaticGitUseWindows)' And 'true' == '$(UseGitWindows)'" >
     
     <Message Text="Git Windows: Include directory NuGet and Local" Importance="High" />
@@ -90,9 +52,9 @@
     <ItemGroup>
       
       <None
-        Include="$(GitWindowsZipDirectory)/**"
+        Include="$(GitWindowsZipFileRelative)"
         Pack="true"
-        PackagePath="$(GitWindowsZipRelativeRuntime)" >
+        PackagePath="$(GitWindowsRuntimeDirectory)" >
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     
@@ -109,9 +71,9 @@
     <ItemGroup>
       
       <None
-        Include="$(GitWindowsZipDirectory)/**"
+        Include="$(GitWindowsZipFileRelative)"
         Pack="true"
-        PackagePath="$(GitWindowsZipRelativeRuntime)" >
+        PackagePath="$(GitWindowsRuntimeDirectory)" >
       </None>
     
     </ItemGroup>
@@ -119,11 +81,16 @@
   </Target>
   
   <Target Name="GitWindowsCleanup" BeforeTargets="Clean" >
-    <RemoveDir Directories="$(GitWindowsZipRelativeRuntime)" ContinueOnError="WarnAndContinue" />
+    <RemoveDir Directories="$(GitWindowsRuntimeDirectory)" ContinueOnError="WarnAndContinue" />
     <!-- `MinGit-2.51.2-64-bit.zip` is not removed; it is assumed that the downloaded file is error-free. -->
   </Target>
   
   <Target Name="GitWindowsGeneratePath" BeforeTargets="BeforeCompile">
+    
+    <PropertyGroup>
+      <GitWindowsOutputZipFileRelativeForwardSlash>$([System.String]::Copy('$(GitWindowsOutputZipFileRelative)').Replace('\', '/'))</GitWindowsOutputZipFileRelativeForwardSlash>
+      <GitWindowsOutputExecutableRelativeForwardSlash>$([System.String]::Copy('$(GitWindowsOutputExecutableRelative)').Replace('\', '/'))</GitWindowsOutputExecutableRelativeForwardSlash>
+    </PropertyGroup>
     
     <WriteLinesToFile
       File="Lib/GitWindowsLib.cs"
@@ -139,7 +106,8 @@ namespace Chris82111.LibCsharpStaticGitCollection.Lib
     {
         public const string GitWindowsUrl = @"$(GitWindowsUrl)"%3B
         public const string GitWindowsExpectedHash = "$(GitWindowsExpectedHash)"%3B
-        public const string GitWindowsRelativeOutputExecutable = @"$(GitWindowsRelativeOutputExecutable.Replace(&apos;\&apos;, &apos;/&apos;))"%3B
+        public const string GitWindowsOutputZipFileRelative = @"$(GitWindowsOutputZipFileRelativeForwardSlash)"%3B
+        public const string GitWindowsOutputExecutableRelative = @"$(GitWindowsOutputExecutableRelativeForwardSlash)"%3B
     }
 }
 ' />

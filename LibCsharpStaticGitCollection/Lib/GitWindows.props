@@ -8,11 +8,11 @@
     <!-- Zip 256 hash -->  
     <GitWindowsExpectedHash>8f0a7bc389c0bccc9daf6107cff4efb176348e34b8d787f02a36679a5588e072</GitWindowsExpectedHash>
     
-    <!-- runtimes/win-x64/native/mingit -->
-    <GitWindowsZipRelativeRuntime>$([System.IO.Path]::Combine('runtimes', 'win-x64', 'native', 'mingit'))</GitWindowsZipRelativeRuntime>
+    <!-- runtimes/win-x64/native -->
+    <GitWindowsRuntimeDirectory>$([System.IO.Path]::Combine('runtimes', 'win-x64', 'native'))</GitWindowsRuntimeDirectory>
     
     <!-- cmd/git.exe -->
-    <GitWindowsZipRelativeExecutable>$([System.IO.Path]::Combine('cmd', 'git.exe'))</GitWindowsZipRelativeExecutable>
+    <GitWindowsExecutableRelative>$([System.IO.Path]::Combine('cmd', 'git.exe'))</GitWindowsExecutableRelative>
   
   </PropertyGroup>
   
@@ -34,27 +34,31 @@
     <UseGitWindows Condition="'$(IsAnyRid)' == 'True' Or '$(IsEmptyRid)' == 'True' Or '$(IsWindowsX64)' == 'True'" >True</UseGitWindows>
     <UseGitWindows Condition="'$(UseGitWindows)' == ''">False</UseGitWindows>
     
-    <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib -->
-    <GitWindowsLibDirectory>$(MSBuildThisFileDirectory.TrimEnd('/').TrimEnd('\'))</GitWindowsLibDirectory>
     
     <!-- MinGit-2.51.2-64-bit.zip -->
     <GitWindowsZipFile>$([System.IO.Path]::GetFileName('$(GitWindowsUrl)'))</GitWindowsZipFile>
     
-    <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib/MinGit-2.51.2-64-bit.zip -->
-    <GitWindowsZipFileFull>$([System.IO.Path]::Combine('$(GitWindowsLibDirectory)', '$(GitWindowsZipFile)'))</GitWindowsZipFileFull>
+    <!-- runtimes/win-x64/native/MinGit-2.51.2-64-bit.zip -->
+    <GitWindowsZipFileRelative>$([System.IO.Path]::Combine('$(GitWindowsRuntimeDirectory)', '$(GitWindowsZipFile)'))</GitWindowsZipFileRelative>
+    
+    <!-- -unchecked -->
+    <GitWindowsUncheckedExtension>-unchecked</GitWindowsUncheckedExtension>
     
     <!-- MinGit-2.51.2-64-bit.zip-unchecked -->
-    <GitWindowsZipFileUnchecked>'$(GitWindowsZipFile)-unchecked'))</GitWindowsZipFileUnchecked>
+    <GitWindowsZipFileUnchecked>$([System.String]::Concat('$(GitWindowsZipFile)', '$(GitWindowsUncheckedExtension)'))</GitWindowsZipFileUnchecked>
     
-    <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib/MinGit-2.51.2-64-bit.zip-unchecked -->
-    <GitWindowsZipFileUncheckedFull>$([System.IO.Path]::Combine('$(GitWindowsLibDirectory)', '$(GitWindowsZipFileUnchecked)'))</GitWindowsZipFileUncheckedFull>
-    
+    <!-- runtimes/win-x64/native/MinGit-2.51.2-64-bit.zip-unchecked -->
+    <GitWindowsZipFileUncheckedRelative>$([System.String]::Concat('$(GitWindowsZipFileRelative)', '$(GitWindowsUncheckedExtension)'))</GitWindowsZipFileUncheckedRelative>
+  
   </PropertyGroup>
   
   <PropertyGroup Label="GitWindowsRelativeOutput" >
     
-    <!-- runtimes/win-x64/native/mingit/cmd/git.exe -->
-    <GitWindowsRelativeOutputExecutable>$([System.IO.Path]::Combine('$(GitWindowsZipRelativeRuntime)', '$(GitWindowsZipRelativeExecutable)'))</GitWindowsRelativeOutputExecutable>
+    <!-- runtimes/win-x64/native/MinGit-2.51.2-64-bit.zip -->
+    <GitWindowsOutputZipFileRelative>$(GitWindowsZipFileRelative)</GitWindowsOutputZipFileRelative>
+    
+    <!-- cmd/git.exe -->
+    <GitWindowsOutputExecutableRelative>$(GitWindowsExecutableRelative)</GitWindowsOutputExecutableRelative>
   
   </PropertyGroup>
 
