@@ -121,6 +121,44 @@ There are various ways to disable individual functions during the build:
 4. A custom property can override the properties:  
    `dotnet build -c Debug -p:EnableStaticGitUseLinux=false -p:EnableStaticGitUseWindows=false`
 
+## NuGet
+
+### Create a Local NuGet Package Feed
+
+The following commands create a local NuGet package feed named `local`:
+
+```bash
+dotnet nuget list source
+```
+
+```bash
+dotnet nuget add source C:\NuGetPackages\ -n local
+```
+
+### Publishing Your Own Version
+
+The following command creates a NuGet package and transfers it to a local package feed named `local`:
+
+Change to the directory:
+
+```ps1
+cd C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection
+```
+
+Change the Version in the file `LibCsharpStaticGitCollection.csproj` in the tag `Project/PropertyGroup/Version`, #Major.#Minor.#Patch.
+
+Creating a NuGet package:
+
+```bash
+dotnet pack -c Debug -o .
+```
+
+Once you create a NuGet package it can be published:
+
+```
+dotnet nuget push LibCsharpStaticGitCollection.#Major.#Minor.#Patch.nupkg -s local
+```
+
 ## License
 
 This repository has the MIT license, but it uses many other projects, each of which has its own license that must be observed.

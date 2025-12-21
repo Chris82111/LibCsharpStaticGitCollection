@@ -61,24 +61,6 @@ namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleAppNuGet
             catch {; }
         }
 
-        static void ReworkPath(ref string path)
-        {
-            switch (Path.DirectorySeparatorChar)
-            {
-                case '/':
-                    path = path.Replace('\\', '/');
-                    break;
-                case '\\':
-                    path = path.Replace('/', '\\');
-                    break;
-                default:
-                    path = path
-                        .Replace('\\', Path.DirectorySeparatorChar)
-                        .Replace('/', Path.DirectorySeparatorChar);
-                    break;
-            }
-        }
-
         private const int STD_OUTPUT_HANDLE = -11;
         private const uint ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004;
 

@@ -1,8 +1,8 @@
 ﻿using Chris82111.LibCsharpStaticGitCollection.Dtos;
+using Chris82111.LibCsharpStaticGitCollection.Helpers;
 using Chris82111.LibCsharpStaticGitCollection.Lib;
 using System.Diagnostics;
 using System.Formats.Tar;
-using System.IO;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 
@@ -10,88 +10,251 @@ namespace Chris82111.LibCsharpStaticGitCollection
 {
     public static class Local
     {
-        private static string PathEnvironmentSeparator = OperatingSystem.IsWindows() ? ";" : ":";
-
         public static string BaseDirectory { get; } = AppDomain.CurrentDomain.BaseDirectory;
 
-        //private static async Task DecompressTarGzToTarAsync(string sourceTarGzFilePath, string tarFilePath, bool overwriteFiles = true)
-        //{
-        //    if (false == overwriteFiles && File.Exists(tarFilePath))
-        //    {
-        //        throw new IOException($"Cannot create '{tarFilePath}' because a file or directory with the same name already exists.");
-        //    } 
+        public static string GitCommand { get; set; } = "git";
 
-        //    await using FileStream original = File.OpenRead(sourceTarGzFilePath);
-        //    await using FileStream decompressed = File.Create(tarFilePath);
-        //    await using GZipStream gzip = new GZipStream(original, CompressionMode.Decompress);
+        public static string? GitCommandStaticWindows { get; private set; } = null;
 
-        //    await gzip.CopyToAsync(decompressed);
-        //}
+        public static string? GitCommandStaticLinux { get; private set; } = null;
 
-        //private static async Task ExtractTarGzToDirectory(string sourceTarGzFilePath, string? targetDirectory = null, bool overwriteFiles = true)
-        //{
-        //    if (string.IsNullOrEmpty(sourceTarGzFilePath))
-        //    {
-        //        throw new ArgumentNullException(nameof(sourceTarGzFilePath));
-        //    }
+        /// <summary>
+        /// The individual environment variables are separated by different delimiters in Linux (':') and Windows (';') systems.
+        /// </summary>
+        private static readonly string PathEnvironmentSeparator = OperatingSystem.IsWindows() ? ";" : ":";
 
-        //    if (string.IsNullOrEmpty(targetDirectory))
-        //    {
-        //        targetDirectory = ".";
-        //    }
+        private static readonly string WhitchCommand = OperatingSystem.IsWindows() ? "where" : "which";
 
-        //    var fileName = Path.GetFileName(sourceTarGzFilePath);
-        //    if (false == fileName.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
-        //    {
-        //        throw new InvalidOperationException("Invalid file type, only '.tar.gz' is allowed.");
-        //    }
+        private static async Task DecompressTarGzToTarAsync(string sourceTarGzFilePath, string tarFilePath, bool overwriteFiles = true)
+        {
+            if (false == overwriteFiles && File.Exists(tarFilePath))
+            {
+                throw new IOException($"Cannot create '{tarFilePath}' because a file or directory with the same name already exists.");
+            }
 
-        //    string tarFilePath = Path.Combine(targetDirectory, fileName.Substring(0, fileName.Length - 3));
+            await using FileStream original = File.OpenRead(sourceTarGzFilePath);
+            await using FileStream decompressed = File.Create(tarFilePath);
+            await using GZipStream gzip = new GZipStream(original, CompressionMode.Decompress);
 
-        //    Directory.CreateDirectory(targetDirectory);
+            await gzip.CopyToAsync(decompressed);
+        }
 
-        //    await DecompressTarGzToTarAsync(sourceTarGzFilePath, tarFilePath, overwriteFiles);
+        private static async Task ExtractTarGzToDirectory(string sourceTarGzFilePath, string? targetDirectory = null, bool overwriteFiles = true)
+        {
+            if (string.IsNullOrEmpty(sourceTarGzFilePath))
+            {
+                throw new ArgumentNullException(nameof(sourceTarGzFilePath));
+            }
 
-        //    await TarFile.ExtractToDirectoryAsync(
-        //        tarFilePath,
-        //        GitLinuxLib.GitLinuxRelativeOutputZipDirectory,
-        //        overwriteFiles: overwriteFiles);
+            if (string.IsNullOrEmpty(targetDirectory))
+            {
+                targetDirectory = ".";
+            }
 
-        //    File.Delete(tarFilePath);
-        //}
+            var fileName = Path.GetFileName(sourceTarGzFilePath);
+            if (false == fileName.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Invalid file type, only '.tar.gz' is allowed.");
+            }
+
+            string tarFilePath = Path.Combine(targetDirectory, fileName.Substring(0, fileName.Length - 3));
+
+            Directory.CreateDirectory(targetDirectory);
+
+            await DecompressTarGzToTarAsync(sourceTarGzFilePath, tarFilePath, overwriteFiles);
+
+            await TarFile.ExtractToDirectoryAsync(
+                tarFilePath,
+                targetDirectory,
+                overwriteFiles: overwriteFiles);
+
+            File.Delete(tarFilePath);
+        }
+
+        public static string ExpandEnvironmentVariables(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return name;
+            }
+
+            name = Environment.ExpandEnvironmentVariables(name);
+
+            if (name == "~" || name.StartsWith("~/") || name.StartsWith("~\\"))
+            {
+                var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                name = Path.Combine(home, name.Length > 2 ? name.Substring(2) : "");
+            }
+
+            return Path.GetFullPath(name);
+        }
 
         public static async Task ExtractArchives()
         {
+            await ExtractArchives(null, null);
+        }
+
+        public static async Task ExtractArchivesFrom(string archivePath)
+        {
+            await ExtractArchives(archivePath, null);
+        }
+
+        public static async Task ExtractArchivesTo(string destination)
+        {
+            await ExtractArchives(null, destination);
+        }
+
+        public static string ReplacePathSeparatorsOnly(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return path;
+            }
+
+            switch (Path.DirectorySeparatorChar)
+            {
+                case '/':
+                    path = path.Replace('\\', '/');
+                    break;
+                case '\\':
+                    path = path.Replace('/', '\\');
+                    break;
+                default:
+                    path = path
+                        .Replace('\\', Path.DirectorySeparatorChar)
+                        .Replace('/', Path.DirectorySeparatorChar);
+                    break;
+            }
+
+            return path;
+        }
+
+        public static async Task ExtractArchives(string? archivePath, string? destination)
+        {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-          //      if (false == Directory.Exists(GitWindowsLib.GitWindowsRelativeOutputZipDirectory))
-          //      {
-          //          await Task.Run(() => 
-          //          ZipFile.ExtractToDirectory(
-          //              GitWindowsLib.GitWindowsRelativeOutputZipFile, 
-          //              GitWindowsLib.GitWindowsRelativeOutputZipDirectory,
-          //              overwriteFiles: true));
-		        //}
+                var files = new List<string>(4);
+
+                var fileName = Path.GetFileName(GitWindowsLib.GitWindowsOutputZipFileRelative);
+
+                if (false == string.IsNullOrEmpty(archivePath))
+                {
+                    files.Add(ExpandEnvironmentVariables(Path.Combine(archivePath, fileName)));
+                }
+                
+                files.Add(ExpandEnvironmentVariables(Path.Combine(BaseDirectory, fileName)));
+
+                files.Add(ExpandEnvironmentVariables(Path.Combine(Directory.GetCurrentDirectory(), fileName)));
+
+                files.Add(ExpandEnvironmentVariables(Path.Combine(BaseDirectory, GitWindowsLib.GitWindowsOutputZipFileRelative)));
+
+                string? archive = null;
+
+                foreach (var file in files)
+                {
+                    if (File.Exists(file))
+                    {
+                        archive = file;
+                        break;
+                    }
+                }
+
+                if(null == archive)
+                {
+                    throw new FileNotFoundException($"File was no found: {GitWindowsLib.GitWindowsOutputZipFileRelative}");
+                }
+
+                if(".zip" != Path.GetExtension(archive))
+                {
+                    throw new Exception($"File Extension must be .zip");
+                }
+
+                var output = Path.Combine(
+                    destination ?? Path.Combine(BaseDirectory, ".bin", Path.GetDirectoryName(GitWindowsLib.GitWindowsOutputZipFileRelative) ?? string.Empty),
+                    Path.GetFileNameWithoutExtension(archive));
+
+                if (false == Directory.Exists(output))
+                {
+                    await Task.Run(() =>
+                    ZipFile.ExtractToDirectory(
+                        archive,
+                        output,
+                        overwriteFiles: true));
+                }
+
+                GitCommandStaticWindows = ReplacePathSeparatorsOnly(Path.Combine(output, GitWindowsLib.GitWindowsOutputExecutableRelative));
+                GitCommand = GitCommandStaticWindows;
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                //if (false == Directory.Exists(GitLinuxLib.GitLinuxRelativeOutputZipDirectory))
-                //{
-                //    await ExtractTarGzToDirectory(
-                //        GitLinuxLib.GitLinuxRelativeOutputZipFile,
-                //        GitLinuxLib.GitLinuxRelativeOutputZipDirectory,
-                //        overwriteFiles: true);
-                //}
+                var files = new List<string>(4);
 
-                //SetToPahtVariable(GitLinuxLib.GitLinuxRelativeOutputDirectory);
-                //Environment.SetEnvironmentVariable("GIT_PREFIX", GitLinuxLib.GitLinuxRelativeOutputDirectory);
-                //Environment.SetEnvironmentVariable("GIT_EXEC_PATH", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "libexec", "git-core"));
-                //Environment.SetEnvironmentVariable("GIT_TEMPLATE_DIR", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "share", "git-core", "templates"));
-                //Environment.SetEnvironmentVariable("GIT_SSL_CAINFO", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "ca", "ca.pem"));
+                var fileName = Path.GetFileName(GitLinuxLib.GitLinuxOutputZipFileRelative);
 
-                //SetToVariable("LD_LIBRARY_PATH", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "..", "openssl", "lib64"));
-                //SetToVariable("LD_LIBRARY_PATH", Path.Combine(GitLinuxLib.GitLinuxRelativeOutputDirectory, "..", "curl", "lib"));
+                if (false == string.IsNullOrEmpty(archivePath))
+                {
+                    files.Add(ExpandEnvironmentVariables(Path.Combine(archivePath, fileName)));
+                }
+
+                files.Add(ExpandEnvironmentVariables(Path.Combine(BaseDirectory, fileName)));
+
+                files.Add(ExpandEnvironmentVariables(Path.Combine(Directory.GetCurrentDirectory(), fileName)));
+
+                files.Add(ExpandEnvironmentVariables(Path.Combine(BaseDirectory, GitLinuxLib.GitLinuxOutputZipFileRelative)));
+
+                string? archive = null;
+
+                foreach (var file in files)
+                {
+                    if (File.Exists(file))
+                    {
+                        archive = file;
+                        break;
+                    }
+                }
+
+                if (null == archive)
+                {
+                    throw new FileNotFoundException($"File was no found: {GitLinuxLib.GitLinuxOutputZipFileRelative}");
+                }
+
+                var extensionBasedOnLengthsExpected = archive.Substring(archive.Length - 7);
+                if (".tar.gz" != extensionBasedOnLengthsExpected)
+                {
+                    throw new Exception($"File Extension must be .tar.gz");
+                }
+
+                fileName = Path.GetFileName(archive);
+
+                var fileNameWithoutExtension = fileName.Substring(0, fileName.Length - 7);
+
+                var output = Path.Combine(
+                    destination ?? Path.Combine(BaseDirectory, ".bin", Path.GetDirectoryName(GitLinuxLib.GitLinuxOutputZipFileRelative) ?? string.Empty),
+                    fileNameWithoutExtension);
+
+                SymlinkChecker.EnsureSymlinkSupported(output);
+
+                if (false == Directory.Exists(output))
+                {
+                    await ExtractTarGzToDirectory(
+                        archive,
+                        output,
+                        overwriteFiles: true);
+                }
+
+                GitCommandStaticLinux = ReplacePathSeparatorsOnly(Path.Combine(output, GitLinuxLib.GitLinuxOutputExecutableRelative));
+                GitCommand = GitCommandStaticLinux;
+
+                SetToPahtVariable(Path.Combine(output, "bin"));
+                Environment.SetEnvironmentVariable("GIT_PREFIX", output);
+                Environment.SetEnvironmentVariable("GIT_EXEC_PATH", Path.Combine(output, "libexec", "git-core"));
+                // error: Warning: templates not found in /media/chris82111/abc/Users/chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection.TestConsoleApp/bin/Debug/net8.0/temp/runtimes/linux-x64/native/GitLinux/share/git-core/templates
+                Environment.SetEnvironmentVariable("GIT_TEMPLATE_DIR", Path.Combine(output, "share", "git-core", "templates"));
+                Environment.SetEnvironmentVariable("GIT_SSL_CAINFO", Path.Combine(output, "ca", "ca.pem"));
+
+                SetToVariable("LD_LIBRARY_PATH", Path.Combine(output, "openssl", "lib64"));
+                SetToVariable("LD_LIBRARY_PATH", Path.Combine(output, "curl", "lib"));
             }
 
             return;
@@ -123,51 +286,6 @@ namespace Chris82111.LibCsharpStaticGitCollection
 
             Environment.SetEnvironmentVariable("PATH", newDirectory + PathEnvironmentSeparator + currentPath);
         }
-
-#warning Description
-        public static string? GitCommandStaticWindows { get; } = GitCommandStaticWindowsInit();
-
-
-        private static string? GitCommandStaticWindowsInit()
-        {
-            //var fileInfo = new FileInfo(Path.Combine(BaseDirectory, GitWindowsLib.GitWindowsRelativeOutputExecutable));
-            //if (fileInfo.Exists)
-            //{
-            //    return fileInfo.FullName;
-            //}
-            return null;
-        }
-
-        public static string? GitCommandStaticLinux { get; } = GitCommandStaticLinuxInit();
-
-        private static string? GitCommandStaticLinuxInit()
-        {
-            //var fileInfo = new FileInfo(GitLinuxLib.GitLinuxRelativeOutputExecutable);
-            //if (fileInfo.Exists)
-            //{
-            //    return fileInfo.FullName;
-            //}
-            return null;
-        }
-
-        public static string GitCommand { get; set; } = GitCommandInit() ?? "git";
-
-        private static string? GitCommandInit()
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return GitCommandStaticWindows;
-            }
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                return GitCommandStaticLinux;
-            }
-
-            return null;
-        }
-
-        private static readonly string WhitchCommand = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "where" : "which";
 
         public static bool IsProgramAvailable(string? programName)
         {
