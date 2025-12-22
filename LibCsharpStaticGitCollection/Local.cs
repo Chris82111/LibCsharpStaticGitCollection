@@ -129,6 +129,12 @@ namespace Chris82111.LibCsharpStaticGitCollection
             return path;
         }
 
+        public static bool IsDirectoryMissingOrEmpty(string path)
+        {
+            bool existsAndNotEmpty = Directory.Exists(path) && Directory.EnumerateFileSystemEntries(path).Any();
+            return false == existsAndNotEmpty;
+        }
+
         public static async Task ExtractArchives(string? archivePath, string? destination)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -173,7 +179,7 @@ namespace Chris82111.LibCsharpStaticGitCollection
                     destination ?? Path.Combine(BaseDirectory, ".bin", Path.GetDirectoryName(GitWindowsLib.GitWindowsOutputZipFileRelative) ?? string.Empty),
                     Path.GetFileNameWithoutExtension(archive));
 
-                if (false == Directory.Exists(output))
+                if (IsDirectoryMissingOrEmpty(output))
                 {
                     await Task.Run(() =>
                     ZipFile.ExtractToDirectory(
@@ -235,7 +241,7 @@ namespace Chris82111.LibCsharpStaticGitCollection
 
                 SymlinkChecker.EnsureSymlinkSupported(output);
 
-                if (false == Directory.Exists(output))
+                if (IsDirectoryMissingOrEmpty(output))
                 {
                     await ExtractTarGzToDirectory(
                         archive,
@@ -249,7 +255,6 @@ namespace Chris82111.LibCsharpStaticGitCollection
                 SetToPahtVariable(Path.Combine(output, "bin"));
                 Environment.SetEnvironmentVariable("GIT_PREFIX", output);
                 Environment.SetEnvironmentVariable("GIT_EXEC_PATH", Path.Combine(output, "libexec", "git-core"));
-                // error: Warning: templates not found in /media/chris82111/abc/Users/chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection.TestConsoleApp/bin/Debug/net8.0/temp/runtimes/linux-x64/native/GitLinux/share/git-core/templates
                 Environment.SetEnvironmentVariable("GIT_TEMPLATE_DIR", Path.Combine(output, "share", "git-core", "templates"));
                 Environment.SetEnvironmentVariable("GIT_SSL_CAINFO", Path.Combine(output, "ca", "ca.pem"));
 

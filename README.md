@@ -131,7 +131,17 @@ The following commands create a local NuGet package feed named `local`:
 dotnet nuget list source
 ```
 
+Linux:
+
 ```bash
+mkdir -p ~/.NuGetPackages
+dotnet nuget add source ~/.NuGetPackages -n local
+```
+
+Windows:
+
+```bash
+mkdir C:\NuGetPackages
 dotnet nuget add source C:\NuGetPackages\ -n local
 ```
 

@@ -25,6 +25,12 @@ namespace Chris82111.LibCsharpStaticGitCollection.Helpers
                 directory = ".";
             }
 
+            if (false == Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+
             string linkPath = Path.Combine(directory, "symlink_test_link");
 
             // First, check write access

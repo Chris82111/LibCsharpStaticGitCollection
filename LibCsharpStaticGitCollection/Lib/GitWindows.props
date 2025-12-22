@@ -13,6 +13,9 @@
     
     <!-- cmd/git.exe -->
     <GitWindowsExecutableRelative>$([System.IO.Path]::Combine('cmd', 'git.exe'))</GitWindowsExecutableRelative>
+    
+    <!-- GitWindowsLib.cs -->
+    <GitWindowsLibFile>GitWindowsLib.cs</GitWindowsLibFile>
   
   </PropertyGroup>
   
@@ -49,6 +52,18 @@
     
     <!-- runtimes/win-x64/native/MinGit-2.51.2-64-bit.zip-unchecked -->
     <GitWindowsZipFileUncheckedRelative>$([System.String]::Concat('$(GitWindowsZipFileRelative)', '$(GitWindowsUncheckedExtension)'))</GitWindowsZipFileUncheckedRelative>
+  
+    <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib -->
+    <GitWindowsLibDirectoryFull>$(MSBuildThisFileDirectory.TrimEnd('/').TrimEnd('\'))</GitWindowsLibDirectoryFull>
+    
+    <!-- Lib -->
+    <GitWindowsLibDirectory>$([System.String]::Copy('$(GitWindowsLibDirectoryFull)').Replace('$(MSBuildProjectDirectory)', '').Trim('/').Trim('\'))</GitWindowsLibDirectory>
+    
+    <!-- Lib/GitWindows.targets -->
+    <GitWindowsLibRelative>$([System.IO.Path]::Combine('$(GitWindowsLibDirectory)', '$(MSBuildThisFile)'))</GitWindowsLibRelative>
+    
+    <!-- Lib/GitWindowsLib.cs -->
+    <GitWindowsLibFileRelative>$([System.IO.Path]::Combine('$(GitWindowsLibDirectory)', '$(GitWindowsLibFile)'))</GitWindowsLibFileRelative>
   
   </PropertyGroup>
   

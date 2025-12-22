@@ -485,8 +485,7 @@ RUN make install \
 RUN \
   find /opt/git -type f -exec sh -c \
     'file "$1" | grep -q ELF && strip "$1" || true' _ {} \; \
-  && find /opt/git -name "*.a" -delete \
-  && rm -rf /opt/git/share
+  && find /opt/git -name "*.a" -delete
 
 RUN \
   mkdir -p /opt/git/ca && \

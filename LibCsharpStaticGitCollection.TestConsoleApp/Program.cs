@@ -33,7 +33,7 @@ namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleApp
             try
             {
                 Console.WriteLine($"{color}Windows{reset}");
-                Local.GitCommand = Local.GitCommandStaticWindows;
+                Local.GitCommand = Local.GitCommandStaticWindows ?? string.Empty;
                 Console.WriteLine($"{color}Version  {reset}: {Local.GitVersion()}");
                 Console.WriteLine($"{color}Available{reset}: {Local.IsGitAvailable()}");
             }
@@ -42,7 +42,7 @@ namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleApp
             try
             {
                 Console.WriteLine($"{color}Linux{reset}");
-                Local.GitCommand = Local.GitCommandStaticLinux;
+                Local.GitCommand = Local.GitCommandStaticLinux ?? string.Empty;
                 Console.WriteLine($"{color}Version  {reset}: {Local.GitVersion()}");
                 Console.WriteLine($"{color}Available{reset}: {Local.IsGitAvailable()}");
             }

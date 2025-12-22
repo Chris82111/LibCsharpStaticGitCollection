@@ -11,8 +11,14 @@
     <!-- bin/git -->
     <GitLinuxExecutableRelative>$([System.IO.Path]::Combine('bin', 'git'))</GitLinuxExecutableRelative>
     
+    <!-- Dockerfile -->
+    <GitLinuxDockerfile>Dockerfile</GitLinuxDockerfile>
+    
     <!-- setup-git-env.sh -->
     <GitLinuxSetupEnvironment>setup-git-env.sh</GitLinuxSetupEnvironment>
+    
+    <!-- GitLinuxLib.cs -->
+    <GitLinuxLibFile>GitLinuxLib.cs</GitLinuxLibFile>
   
   </PropertyGroup>
   
@@ -50,6 +56,18 @@
     
     <!-- Lib -->
     <GitLinuxLibDirectory>$([System.String]::Copy('$(GitLinuxLibDirectoryFull)').Replace('$(MSBuildProjectDirectory)', '').Trim('/').Trim('\'))</GitLinuxLibDirectory>
+    
+    <!-- Lib/GitLinux.targets -->
+    <GitLinuxLibRelative>$([System.IO.Path]::Combine('$(GitLinuxLibDirectory)', '$(MSBuildThisFile)'))</GitLinuxLibRelative>
+    
+    <!-- Lib/GitLinuxDockerfile -->
+    <GitLinuxDockerfileRelative>$([System.IO.Path]::Combine('$(GitLinuxLibDirectory)', '$(GitLinuxDockerfile)'))</GitLinuxDockerfileRelative>
+    
+    <!-- Lib/setup-git-env.sh -->
+    <GitLinuxSetupEnvironmentRelative>$([System.IO.Path]::Combine('$(GitLinuxLibDirectory)', '$(GitLinuxSetupEnvironment)'))</GitLinuxSetupEnvironmentRelative>
+    
+    <!-- Lib/GitLinuxLib.cs -->
+    <GitLinuxLibFileRelative>$([System.IO.Path]::Combine('$(GitLinuxLibDirectory)', '$(GitLinuxLibFile)'))</GitLinuxLibFileRelative>
     
     
     <DockerCmd Condition="'$(OS)' == 'Windows_NT'">wsl docker</DockerCmd>
