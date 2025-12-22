@@ -19,14 +19,23 @@
 
 </div>
 
-> [!WARNING]
-> The repository can be used as is to run on Linux and Windows.  
-> There are problems with the created executable static version of Git.  
-> Please note the section [#License](#license).  
-> There are problems with different licenses of the individual components.  
-> Distributing the code in this way is not a problem, and in my opinion,  
-> compiling it yourself is also not a problem.  
-> However, the executable file that is created may not be redistributed.
+This repository offers a convenient, cross-platform solution for using Git in a portable form for Linux and Windows. As a powerful wrapper, it abstracts the complexity of Git integration and enables quick and easy integration into existing development environments.
+
+Integration can be done either directly via [NuGet.org](https://www.nuget.org/) or by cloning the repository. This allows the package to be used flexibly either as a direct reference or to set up your own local NuGet package feed - ideal for controlled build environments and enterprise applications.
+
+## Example
+
+```cs
+static void Main(string[] args)
+{
+    Local.ExtractArchives().Wait();
+
+    Console.WriteLine($"Version   : {Local.GitVersion()}");
+    Console.WriteLine($"Available : {Local.IsGitAvailable()}");
+    var result = Chris82111.LibCsharpStaticGitCollection.Local.CallGit(
+      @"clone https://github.com/Chris82111/LibCsharpStaticGitCollection.git");
+}
+```
 
 ## Update 
 
@@ -171,7 +180,7 @@ dotnet nuget push LibCsharpStaticGitCollection.#Major.#Minor.#Patch.nupkg -s loc
 
 ## License
 
-This repository has the MIT license, but it uses many other projects, each of which has its own license that must be observed.
+This repository has the MIT license, but it uses many other projects, each of which has its own license that must be observed. More about license: [licensing-a-repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository).
 
 ### License Static Git For Linux 
 
@@ -180,14 +189,6 @@ This repository has the MIT license, but it uses many other projects, each of wh
 - Build stage (5): MIT ([libpsl](https://github.com/rockdaboot/libpsl/blob/master/LICENSE))
 - Build stage (6): MIT/X derivative license ([libcurl](https://curl.se/docs/faq.html#License-Issues))
 - Build stage (7): GPL-2.0 ([Git](https://git-scm.com/about#free-and-open-source))
-
-More about license: [licensing-a-repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository).
-
-> [!CAUTION]
-> After creating a compiled and linked version, the license changes accordingly.  
-> The GPL-2.0 and Apache-2.0 licenses cannot be combined!
-
-GPL-3.0 is a combination of both. However, it is important to emphasize here that GPL-2.0 is restricted by GPL-3.0 and only the author and contributors may impose these restrictions.
 
 ### License Portable Windows
 
