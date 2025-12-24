@@ -7,8 +7,6 @@ namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleAppNuGet
     {
         static void Main()
         {
-            EnableVTSupport();
-
             Local.ExtractArchives().Wait();
 
             var color = "\x1b[1;49;33m";
@@ -52,39 +50,6 @@ namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleAppNuGet
                 Console.WriteLine($"{color}StandardError {reset}: {result.StandardError}");
             }
             catch {; }
-        }
-
-        private const int STD_OUTPUT_HANDLE = -11;
-        private const uint ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004;
-        [SupportedOSPlatform("windows")]
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern IntPtr GetStdHandle(int nStdHandle);
-
-        [SupportedOSPlatform("windows")]
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
-
-        [SupportedOSPlatform("windows")]
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
-
-        private static void EnableVTSupport()
-        {
-            if (OperatingSystem.IsWindows())
-            {
-                IntPtr handle = GetStdHandle(STD_OUTPUT_HANDLE);
-
-                if (handle == IntPtr.Zero)
-                    return;
-
-                if (!GetConsoleMode(handle, out uint mode))
-                    return;
-
-                // Add the flag that enables ANSI escape sequences
-                mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-
-                SetConsoleMode(handle, mode);
-            }
         }
     }
 }
