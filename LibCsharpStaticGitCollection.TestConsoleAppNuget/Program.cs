@@ -5,7 +5,7 @@ namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleAppNuGet
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             EnableVTSupport();
 

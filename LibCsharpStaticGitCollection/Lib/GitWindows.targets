@@ -105,11 +105,29 @@
 // the code is regenerated.
 namespace Chris82111.LibCsharpStaticGitCollection.Lib
 {
+    /// &lt;summary&gt;
+    /// Paths and names to the archive
+    /// &lt;/summary&gt;
     public static class GitWindowsLib
     {
+        /// &lt;summary&gt;
+        /// Download URL
+        /// &lt;/summary&gt;
         public const string GitWindowsUrl = @"$(GitWindowsUrl)"%3B
+        
+        /// &lt;summary&gt;
+        /// SHA256 hash value
+        /// &lt;/summary&gt;
         public const string GitWindowsExpectedHash = "$(GitWindowsExpectedHash)"%3B
+        
+        /// &lt;summary&gt;
+        /// Relative path to the archive
+        /// &lt;/summary&gt;
         public const string GitWindowsOutputZipFileRelative = @"$(GitWindowsOutputZipFileRelativeForwardSlash)"%3B
+        
+        /// &lt;summary&gt;
+        /// Relative path in the archive
+        /// &lt;/summary&gt;
         public const string GitWindowsOutputExecutableRelative = @"$(GitWindowsOutputExecutableRelativeForwardSlash)"%3B
     }
 }

@@ -78,7 +78,7 @@
   
   <Target Name="GitLinuxCleanup" BeforeTargets="Clean" >
     <Exec Command="$(DockerCmd) rmi staticgitbuildtempimage" IgnoreExitCode="true" />
-    <Exec Command="$(DockerCmd) system prune -f" IgnoreExitCode="true" />
+    <!-- Exec Command="$(DockerCmd) system prune -f" IgnoreExitCode="true" /-->
     <RemoveDir Directories="$(GitLinuxRuntimeDirectory)" />
     <!-- `GitLinux.tar.gz` is not removed; it is assumed that the exported file is error-free. -->
   </Target>
@@ -103,9 +103,19 @@
 // the code is regenerated.
 namespace Chris82111.LibCsharpStaticGitCollection.Lib
 {
+    /// &lt;summary&gt;
+    /// Paths and names to the archive
+    /// &lt;/summary&gt;
     public static class GitLinuxLib
     {
+        /// &lt;summary&gt;
+        /// Relative path to the archive
+        /// &lt;/summary&gt;
         public const string GitLinuxOutputZipFileRelative = @"$(GitLinuxOutputZipFileRelativeForwardSlash)"%3B
+        
+        /// &lt;summary&gt;
+        /// Relative path in the archive
+        /// &lt;/summary&gt;
         public const string GitLinuxOutputExecutableRelative = @"$(GitLinuxOutputExecutableRelativeForwardSlash)"%3B
     }
 }

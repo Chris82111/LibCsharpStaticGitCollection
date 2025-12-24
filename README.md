@@ -42,7 +42,7 @@ static void Main(string[] args)
 The version of Git for Windows (MinGit) can be specified in the file [GitLinux.props](LibCsharpStaticGitCollection/Lib/GitLinux.props).
 The individual versions of Git for Linux can be specified in the [Dockerfile](LibCsharpStaticGitCollection/Lib/Dockerfile) file.
 
-## Bild Requirement
+## Build Requirement
 
 Docker is required for the build process; WSL is also required on Windows.
 The build process takes approximately 9 minutes and 15 seconds.
