@@ -7,8 +7,8 @@
   ![Linux x64](https://img.shields.io/badge/Linux-x64-009639)
   ![Windows x64](https://img.shields.io/badge/Windows-x64-0067C0)
 
-  [![Docker Engine](https://img.shields.io/badge/dependency-Docker_Engine-0d4dF2)](https://docs.docker.com/engine/install "Link to web page")
-  [![WSL](https://img.shields.io/badge/dependency_(Windows)-WSL-00BCF2)](https://learn.microsoft.com/en-us/windows/wsl/install "Link to web page")
+  [![Docker Engine](https://img.shields.io/badge/build_dependency-Docker_Engine-0d4dF2)](https://docs.docker.com/engine/install "Link to web page")
+  [![WSL](https://img.shields.io/badge/build_dependency_(Windows)-WSL-00BCF2)](https://learn.microsoft.com/en-us/windows/wsl/install "Link to web page")
 
   [![Git for Windows](https://img.shields.io/badge/dependency_(Windows)-Git_for_Windows-F1502F)](https://github.com/git-for-windows/git "Link to repository")
   [![zlib, dependency for Git for Linux](https://img.shields.io/badge/dependency_(Linux)-zlib-2C652C)](https://zlib.net/ "Link to web page")
@@ -180,7 +180,12 @@ dotnet nuget push LibCsharpStaticGitCollection.#Major.#Minor.#Patch.nupkg -s loc
 
 ## License
 
-This repository has the MIT license [SPDX](https://spdx.org/licenses/MIT.html), but it uses many other projects, each of which has its own license that must be observed. More about license: [licensing-a-repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository) and [SPDX-licenses](https://spdx.org/licenses/).
+This repository has the MIT license ([LICENSE](LICENSE) file and [SPDX](https://spdx.org/licenses/MIT.html)), but it uses many other projects, each of which has its own license that must be observed, see [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES).  
+
+<!-- The `LICENSE` and `THIRD_PARTY_LICENSES` files are copied to the `LibCsharpStaticGitCollection` repository published by NuGet. -->
+<!-- The `README.md` file contains the same content as the NuGet description, the `Description` tag in the `LibCsharpStaticGitCollection.csproj` file. -->
+
+More about license: [licensing-a-repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository) and [SPDX-licenses](https://spdx.org/licenses/).
 
 ### License Static Git For Linux 
 
@@ -188,20 +193,20 @@ This repository has the MIT license [SPDX](https://spdx.org/licenses/MIT.html), 
 - Build stage (4): Apache-2.0 ([OpenSSL](https://github.com/openssl/openssl?tab=Apache-2.0-1-ov-file#readme)), [SPDX](https://spdx.org/licenses/OpenSSL.html)
 - Build stage (5): MIT ([libpsl](https://github.com/rockdaboot/libpsl/blob/master/LICENSE)), [SPDX](https://spdx.org/licenses/MIT.html)
 - Build stage (6): MIT/X derivative license ([libcurl](https://curl.se/docs/faq.html#License-Issues)), [SPDX](https://spdx.org/licenses/curl.html)
-- Build stage (7): GPL-2.0 ([Git](https://git-scm.com/about#free-and-open-source)), [SPDX](https://spdx.org/licenses/GPL-2.0-only.html)
+- Build stage (7): GPL-2.0-only ([Git](https://git-scm.com/about#free-and-open-source)), [SPDX](https://spdx.org/licenses/GPL-2.0-only.html)
 
 ```mermaid
 stateDiagram-v2
     state "zlib (3),
     (Zlib)" as BuildStage_3
     state "OpenSSL (4),
-    (Apache-2.0)" as BuildStage_4
+    (OpenSSL OR Apache-2.0)" as BuildStage_4
     state "libpsl (5),
     (MIT)" as BuildStage_5
     state "libcurl (6),
-    (MIT/X derivative license)" as BuildStage_6
+    (curl OR MIT/X derivative license)" as BuildStage_6
     state "Git (7),
-    (GPL-2.0)" as BuildStage_7
+    (GPL-2.0-only)" as BuildStage_7
 
     BuildStage_3 --> BuildStage_6
     BuildStage_4 --> BuildStage_6
@@ -215,11 +220,11 @@ stateDiagram-v2
 
 ### License Portable Windows
 
-- Download: GPL-2.0 ([Git for Windows](https://github.com/git-for-windows/git?tab=License-1-ov-file#readme)), [SPDX](https://spdx.org/licenses/GPL-2.0-only.html)
+- Download: GPL-2.0-only ([Git for Windows](https://github.com/git-for-windows/git?tab=License-1-ov-file#readme)), [SPDX](https://spdx.org/licenses/GPL-2.0-only.html)
 
 ## Acknowledgment
 
-- Zlib, optional: This product includes software developed by the Zlib Project. (https://www.zlib.net/)
+- Zlib: This product includes software developed by the Zlib Project. (https://www.zlib.net/) 
 - OpenSSL: This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/)
 - libpsl: This product includes software developed by the libpsl Project. (https://github.com/rockdaboot/libpsl/tree/master)
 - libcurl: This product includes software developed by the curl Project. (https://curl.se/)

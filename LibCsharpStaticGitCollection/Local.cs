@@ -2,8 +2,6 @@
 using Chris82111.LibCsharpStaticGitCollection.Helpers;
 using Chris82111.LibCsharpStaticGitCollection.Lib;
 using System.Diagnostics;
-using System.Formats.Tar;
-using System.IO.Compression;
 using System.Runtime.InteropServices;
 
 namespace Chris82111.LibCsharpStaticGitCollection
