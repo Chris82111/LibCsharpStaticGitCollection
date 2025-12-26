@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="com.github.chris82111.LibCsharpStaticGitCollection" Version="1.0.31" />
+    <PackageReference Include="Chris82111.LibCsharpStaticGitCollection" Version="1.0.32" />
   </ItemGroup>
 
 </Project>

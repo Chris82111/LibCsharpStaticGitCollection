@@ -177,7 +177,7 @@ dotnet pack -c Debug -o .
 Once you create a NuGet package it can be published:
 
 ```shell
-dotnet nuget push com.github.chris82111.LibCsharpStaticGitCollection.#Major.#Minor.#Patch.nupkg -s local
+dotnet nuget push Chris82111.LibCsharpStaticGitCollection.#Major.#Minor.#Patch.nupkg -s local
 ```
 
 ## License

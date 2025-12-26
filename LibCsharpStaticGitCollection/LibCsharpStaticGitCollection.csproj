@@ -8,9 +8,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Chris82111.LibCsharpStaticGitCollection</RootNamespace>
-    <Version>1.0.31</Version>
+    <Version>1.0.32</Version>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
-    <PackageId>com.github.chris82111.LibCsharpStaticGitCollection</PackageId>
+    <PackageId>Chris82111.LibCsharpStaticGitCollection</PackageId>
     <Authors>Chris82111</Authors>
     <Company>LibCsharpStaticGitCollection</Company>
     <RepositoryUrl>https://github.com/Chris82111/LibCsharpStaticGitCollection</RepositoryUrl>
