@@ -8,7 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Chris82111.LibCsharpStaticGitCollection</RootNamespace>
-    <Version>1.0.30</Version>
+    <Version>1.0.31</Version>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <PackageId>com.github.chris82111.LibCsharpStaticGitCollection</PackageId>
     <Authors>Chris82111</Authors>
@@ -68,6 +68,7 @@ Acknowledgment
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT AND (Zlib AND OpenSSL AND MIT AND curl AND GPL-2.0-only)</PackageLicenseExpression>
+    <Copyright>Copyright (c) Chris82111 2025</Copyright>
   </PropertyGroup>
   
   <ItemGroup>

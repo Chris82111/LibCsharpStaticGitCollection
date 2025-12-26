@@ -1,7 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
-
-namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleApp
+﻿namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleApp
 {
     internal class Program
     {

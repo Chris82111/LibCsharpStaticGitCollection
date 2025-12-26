@@ -25,7 +25,9 @@ Integration can be done either directly via [NuGet.org](https://www.nuget.org/) 
 
 ## Example
 
-```cs
+This minimal example demonstrates how to use the package:
+
+```c#
 static void Main(string[] args)
 {
     Local.ExtractArchives().Wait();
@@ -37,22 +39,42 @@ static void Main(string[] args)
 }
 ```
 
-## Update 
+## Build 
 
-The version of Git for Windows (MinGit) can be specified in the file [GitLinux.props](LibCsharpStaticGitCollection/Lib/GitLinux.props).
-The individual versions of Git for Linux can be specified in the [Dockerfile](LibCsharpStaticGitCollection/Lib/Dockerfile) file.
+Except for the [#License](#license) and [#Acknowledgment](#acknowledgment) sections, the following sections are only relevant to developers. This applies to those who want to clone the repository and compile it themselves. They can be skipped when using NuGet.
 
-## Build Requirement
-
-Docker is required for the build process; WSL is also required on Windows.
-The build process takes approximately 9 minutes and 15 seconds.
+Docker is required for the build process; WSL is also required on Windows.  
+The build process takes approximately 9 minutes.
 
 - `dotnet build /p:Configuration=Debug`
 - `dotnet build /p:Configuration=Release`
 
+There are various ways to disable individual functions during the build:
+
+1. The file `LibraryConfigDefaults.props` can be modified, but it is tracked by Git.
+2. A new file `LibraryConfigOverrides.props` can be created next to the file `LibraryConfigDefaults.props` with the following content:
+   
+   ```c#
+   <Project>
+     <PropertyGroup>
+       <EnableStaticGitUseLinux>false</EnableStaticGitUseLinux>
+       <EnableStaticGitUseWindows>false</EnableStaticGitUseWindows>
+     </PropertyGroup>
+   </Project>
+   ```
+   
+3. An environment variable can override the properties
+4. A custom property can override the properties:  
+   `dotnet build -c Debug -p:EnableStaticGitUseLinux=false -p:EnableStaticGitUseWindows=false`
+
+### Update 
+
+The version of Git for Windows (MinGit) can be specified in the file [GitWindows.props](LibCsharpStaticGitCollection/Lib/GitWindows.props).  
+The individual versions of Git for Linux can be specified in the [Dockerfile](LibCsharpStaticGitCollection/Lib/Dockerfile) file.
+
 ### Docker
 
-The entire build process requires many prerequisites. To always provide the same build environment and avoid complications with the host operating system, the build is performed in a container. For this reason, Docker is required to create the static Git for Linux.
+The entire build process requires many prerequisites. To always provide the same build environment and avoid complications with the host operating system, the build is performed in a container. For this reason, Docker is required to create a portable Git for Linux.
 
 #### Docker on Windows
 
@@ -74,22 +96,22 @@ The entire build process requires many prerequisites. To always provide the same
 
 Docker must be installed on Linux.
 
+#### Docker Errors
+
+Here is a list of common mistakes:
+
 1. Mounted NTFS drive:
 
-   ```bash
+   ```shell
    EXEC : error : failed to solve: failed to read dockerfile: open Dockerfile: no such file or directory
        LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib/GitLinux.targets(27,5): error MSB3073: The command "docker build --progress=plain -f LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib/Dockerfile -t staticgitbuildtempimage LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib" exited with code 1.
    ```
    
    Do not use an NTFS-mounted drive. This can cause Docker to be unable to find the `Dockerfile` file.
 
-#### Docker Errors
-
-Here is a list of common mistakes:
-
-1. Permission denied:
+2. Permission denied:
    
-   ```bash
+   ```shell
    LibCsharpStaticGitCollection failed with 2 error(s) (0.1s)
        EXEC : error : permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Head "http://%2Fvar%2Frun%2Fdocker.sock/_ping": dial unix /var/run/docker.sock: connect: permission denied
        LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib/GitLinux.targets(21,5): error MSB3073: The command "docker build --progress=plain -t staticgitbuildtempimage ." exited with code 1.
@@ -97,38 +119,18 @@ Here is a list of common mistakes:
    
    To provoke this error, you can run `docker ps` in the terminal. An error should then appear due to insufficient permissions. This error can be resolved as follows. The current user must be added to the Docker group. Enter the following commands:
    
-   1.1. Checks whether the group exists:  
-        `getent group docker`  
-        If it prints a line like `docker:x:AnyNumer:` then the group exists.  
-        If it prints nothing, the group does not exist.  
-
-   1.2. Only create a group if it does not exist; sudo is required:  
-        `if ! getent group docker > /dev/null ; then sudo groupadd docker ; fi`  
-
-   1.3. Add your user to the docker group:  
-        `sudo usermod -aG docker $USER`
-
+   1. Checks whether the group exists:  
+      `getent group docker`  
+      If it prints a line like `docker:x:AnyNumer:` then the group exists.  
+      If it prints nothing, the group does not exist.  
+   
+   2. Only create a group if it does not exist; sudo is required:  
+      `if ! getent group docker > /dev/null ; then sudo groupadd docker ; fi`  
+   
+   3. Add your user to the docker group:  
+      `sudo usermod -aG docker $USER`
+   
    Then log out and back in (or reboot) so the group takes effect.
-
-## Influencing the Build Process
-
-There are various ways to disable individual functions during the build:
-
-1. The file `LibraryConfigDefaults.props` can be modified, but it is tracked by Git.
-2. A new file `LibraryConfigOverrides.props` can be created next to the file `LibraryConfigDefaults.props` with the following content:
-   
-   ```cs
-   <Project>
-     <PropertyGroup>
-       <EnableStaticGitUseLinux>false</EnableStaticGitUseLinux>
-       <EnableStaticGitUseWindows>false</EnableStaticGitUseWindows>
-     </PropertyGroup>
-   </Project>
-   ```
-   
-3. An environment variable can override the properties
-4. A custom property can override the properties:  
-   `dotnet build -c Debug -p:EnableStaticGitUseLinux=false -p:EnableStaticGitUseWindows=false`
 
 ## NuGet
 
@@ -136,20 +138,20 @@ There are various ways to disable individual functions during the build:
 
 The following commands create a local NuGet package feed named `local`:
 
-```bash
+```shell
 dotnet nuget list source
 ```
 
 Linux:
 
-```bash
+```shell
 mkdir -p ~/.NuGetPackages
 dotnet nuget add source ~/.NuGetPackages -n local
 ```
 
 Windows:
 
-```bash
+```powershell
 mkdir C:\NuGetPackages
 dotnet nuget add source C:\NuGetPackages\ -n local
 ```
@@ -160,7 +162,7 @@ The following command creates a NuGet package and transfers it to a local packag
 
 Change to the directory:
 
-```ps1
+```powershell
 cd C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection
 ```
 
@@ -168,14 +170,14 @@ Change the Version in the file `LibCsharpStaticGitCollection.csproj` in the tag 
 
 Creating a NuGet package:
 
-```bash
+```shell
 dotnet pack -c Debug -o .
 ```
 
 Once you create a NuGet package it can be published:
 
-```
-dotnet nuget push LibCsharpStaticGitCollection.#Major.#Minor.#Patch.nupkg -s local
+```shell
+dotnet nuget push com.github.chris82111.LibCsharpStaticGitCollection.#Major.#Minor.#Patch.nupkg -s local
 ```
 
 ## License
@@ -185,9 +187,9 @@ This repository has the MIT license ([LICENSE](LICENSE) file and [SPDX](https://
 <!-- The `LICENSE` and `THIRD_PARTY_LICENSES` files are copied to the `LibCsharpStaticGitCollection` repository published by NuGet. -->
 <!-- The `README.md` file contains the same content as the NuGet description, the `Description` tag in the `LibCsharpStaticGitCollection.csproj` file. -->
 
-More about license: [licensing-a-repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository) and [SPDX-licenses](https://spdx.org/licenses/).
+More about licensing: [licensing-a-repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository) and [SPDX-licenses](https://spdx.org/licenses/).
 
-### License Static Git For Linux 
+### License Portable Git for Linux 
 
 - Build stage (3): Zlib ([zlib](https://zlib.net/zlib_license.html)), [SPDX](https://spdx.org/licenses/Zlib.html)
 - Build stage (4): Apache-2.0 ([OpenSSL](https://github.com/openssl/openssl?tab=Apache-2.0-1-ov-file#readme)), [SPDX](https://spdx.org/licenses/OpenSSL.html)

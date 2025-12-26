@@ -11,9 +11,8 @@
     
   <Target Name="GitLinuxBuild"
     AfterTargets="GitLinuxPropertyGroup"
-    Inputs="$(GitLinuxDockerfileRelative);$(GitLinuxSetupEnvironmentRelative)"
     Outputs="$(GitLinuxZipFileRelative)"
-    Condition="'true' == '$(EnableStaticGitUseLinux)'" >
+    Condition="!Exists('$(GitLinuxZipFileRelative)') And 'true' == '$(EnableStaticGitUseLinux)'" >
     
     <Message Text="Git Linux  : Running Docker using: $(DockerCmd)" Importance="high" />
     

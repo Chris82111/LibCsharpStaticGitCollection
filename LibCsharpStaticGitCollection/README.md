@@ -1,6 +1,6 @@
 # LibCsharpStaticGitCollection
 
-This repository offers a convenient, cross-platform solution for using Git
+This [repository](https://github.com/Chris82111/LibCsharpStaticGitCollection) offers a convenient, cross-platform solution for using Git
 in a portable form for Linux and Windows. As a powerful wrapper, it abstracts
 the complexity of Git integration and enables quick and easy integration into
 existing development environments.
