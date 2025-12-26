@@ -8,6 +8,7 @@
 # docker build --progress=plain -t tempimage .
 
 # Debug
+# docker build --progress=plain --target test_72_stage -t tempimage .
 # docker run -it tempimage bash
 
 # Export
@@ -75,9 +76,7 @@ ENV gitSha256="9b44c2b337ec838e10aad42439d390963904449710d30c9e7e4ba449f45da98f"
 FROM base_stage AS build_stage
 
 RUN apt-get update -y && apt-get install -y \
-  build-essential \
-  musl \
-  musl-tools
+  build-essential
 
 
 #------------------------------------------------------------------------------
@@ -98,7 +97,7 @@ RUN \
 WORKDIR /build/zlib
 
 # Configure
-RUN CC=musl-gcc ./configure --prefix=/opt/zlib --static
+RUN ./configure --prefix=/opt/zlib --static
 # Multi-threaded build, uses all CPU cores with `-j$(nproc)`
 RUN make
 # Install
@@ -130,11 +129,20 @@ WORKDIR /build/openssl
 
 # With disable secure memory: 
 # Disable AF_ALG engine during configuration
-# Now configure it correctly for a musl static build, disabling features that cause kernel header issues:
-RUN ./Configure linux-x86_64 no-secure-memory no-afalgeng no-shared no-dso --prefix=/opt/openssl --openssldir=/opt/openssl
+# Now configure it correctly for a static and shared build, disabling features that cause kernel header issues:
+RUN ./Configure \
+  shared \
+  linux-x86_64 \
+  no-secure-memory \
+  no-afalgeng \
+  --prefix=/opt/openssl \
+  --openssldir=/opt/openssl
+
 # Multi-threaded build, uses all CPU cores with `-j$(nproc)`
-RUN make CC=musl-gcc AR="ar" RANLIB="ranlib"
+RUN make AR="ar" RANLIB="ranlib"
+
 RUN make install_sw
+
 
 # Ensure ouput is static
 RUN \
@@ -146,6 +154,75 @@ RUN \
   if ldd /opt/openssl/lib64/libssl.a >/dev/null 2>&1; then \
     echo "ERROR: libssl.a is dynamically linked"; exit 1; \
   fi
+
+# Ensure ouput is dynamic
+RUN \
+  if ! readelf -d /opt/openssl/lib64/libcrypto.so >/dev/null 2>&1; then \
+    echo "ERROR: libcrypto.so is NOT dynamically linked"; exit 1; \
+  fi
+
+RUN \
+  if ! readelf -d /opt/openssl/lib64/libssl.so >/dev/null 2>&1; then \
+    echo "ERROR: libssl.so is NOT dynamically linked"; exit 1; \
+  fi
+
+# RUN \
+#   set -e; \
+#   LIB=/opt/openssl/lib64/libcrypto.so; \
+#   \
+#   # 1. Verify shared object header
+#   if ! readelf -h "$LIB" | grep -q "Type:.*DYN"; then \
+#     echo "\033[0;31mERROR: Not a shared library\033[0m"; exit 1; \
+#   fi; \
+#   \
+#   # 2. Check for interpreter
+#   INTERP=$(readelf -l "$LIB" | awk '/Requesting program interpreter/ {print $NF}'); \
+#   if [ -z "$INTERP" ]; then \
+#     echo "\033[1;34mOK: No ELF interpreter – static or libc-independent build\033[0m"; \
+#     # Accept musl libraries (NEEDED: libc.so)
+#     if readelf -d "$LIB" | grep -q "Shared library: \\[libc.so\\]"; then \
+#       echo "\033[1;34mOK: musl-linked '$LIB' found\033[0m"; \
+#     fi; \
+#     exit 0; \
+#   fi; \
+#   \
+#   # 3. If an interpreter exists, classify it
+#   if echo "$INTERP" | grep -q "ld-musl"; then \
+#     echo "OK: musl-linked\033[0m"; \
+#   elif echo "$INTERP" | grep -q "ld-linux"; then \
+#     echo "\033[0;31mERROR: glibc-linked\033[0m"; exit 1; \
+#   else \
+#     echo "\033[0;31mERROR: Unknown interpreter: $INTERP\033[0m"; exit 1; \
+#   fi
+# 
+# RUN \
+#   set -e; \
+#   LIB=/opt/openssl/lib64/libssl.so; \
+#   \
+#   # 1. Verify shared object header
+#   if ! readelf -h "$LIB" | grep -q "Type:.*DYN"; then \
+#     echo "\033[0;31mERROR: Not a shared library\033[0m"; exit 1; \
+#   fi; \
+#   \
+#   # 2. Check for interpreter
+#   INTERP=$(readelf -l "$LIB" | awk '/Requesting program interpreter/ {print $NF}'); \
+#   if [ -z "$INTERP" ]; then \
+#     echo "\033[1;34mOK: No ELF interpreter – static or libc-independent build\033[0m"; \
+#     # Accept musl libraries (NEEDED: libc.so)
+#     if readelf -d "$LIB" | grep -q "Shared library: \\[libc.so\\]"; then \
+#       echo "\033[1;34mOK: musl-linked '$LIB' found\033[0m"; \
+#     fi; \
+#     exit 0; \
+#   fi; \
+#   \
+#   # 3. If an interpreter exists, classify it
+#   if echo "$INTERP" | grep -q "ld-musl"; then \
+#     echo "OK: musl-linked\033[0m"; \
+#   elif echo "$INTERP" | grep -q "ld-linux"; then \
+#     echo "\033[0;31mERROR: glibc-linked\033[0m"; exit 1; \
+#   else \
+#     echo "\033[0;31mERROR: Unknown interpreter: $INTERP\033[0m"; exit 1; \
+#   fi
 
 
 #------------------------------------------------------------------------------
@@ -168,8 +245,13 @@ RUN \
 
 WORKDIR /build/libpsl
 
-RUN ./configure --prefix=/opt/libpsl --disable-shared --enable-static
-RUN make CC=musl-gcc
+RUN ./configure \
+  --prefix=/opt/libpsl \
+  --disable-shared \
+  --enable-static
+
+RUN make
+
 RUN make install
 
 # Ensure ouput is static
@@ -186,7 +268,11 @@ RUN \
 FROM build_stage AS libcurl_stage
 
 RUN apt-get -y update && apt-get install -y \
-  gettext
+  gettext \
+  autoconf \
+  automake \
+  libtool \
+  pkg-config
 
 WORKDIR /build
 
@@ -198,42 +284,28 @@ RUN \
   rm -f "packed.tar.gz"
 
 COPY --from=zlib_stage    /opt/zlib /opt/zlib
-COPY --from=openssl_stage /build/openssl /build/openssl
 COPY --from=openssl_stage /opt/openssl /opt/openssl
 COPY --from=libpsl_stage  /opt/libpsl /opt/libpsl
 
 WORKDIR /build/curl
 
-ENV CC=musl-gcc
-ENV CPPFLAGS="-I/build/openssl/include -I/opt/openssl/include -I/opt/zlib/include"
-ENV LDFLAGS="-static -L/build/openssl -L/opt/openssl/lib -L/opt/zlib/lib"
-ENV LIBS="-lssl -lcrypto -lz -ldl -lpthread"
+ENV LD_LIBRARY_PATH="/opt/openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
+
+ENV CPPFLAGS="-I/opt/openssl/include -I/opt/zlib/include -I/opt/libpsl/include"
+ENV LDFLAGS="-L/opt/openssl/lib64 -L/opt/zlib/lib -L/opt/libpsl/lib"
+ENV LIBS="-lssl -lcrypto -lz -lpsl"
 
 RUN ./configure \
   --prefix=/opt/curl \
-  --disable-shared \
   --enable-static \
-  --with-ssl=/build/openssl \
+  --enable-shared \
+  --with-ssl=/opt/openssl \
   --with-zlib=/opt/zlib \
   --with-libpsl=/opt/libpsl \
-  --disable-ldap \
-  --disable-ldap-sasl
+  --disable-ldap
 
-RUN make CC=musl-gcc
+RUN make
 RUN make install
-
-# Optional test run 
-#echo '#include <curl/curl.h>
-#int main() { CURL *c = curl_easy_init(); return 0; }' > test.c
-#
-#musl-gcc -static -o test_static test.c \
-#  -I/opt/curl/include \
-#  -I/build/openssl-3.5.4/include \
-#  -L/opt/curl/lib \
-#  -L/opt/libpsl/lib \
-#  -L/opt/zlib/lib \
-#  -L/build/openssl-3.5.4 \
-#  -lcurl -lpsl -lssl -lcrypto -lz -ldl -lpthread
 
 # Ensure ouput is static
 RUN \
@@ -241,9 +313,95 @@ RUN \
     echo "ERROR: libcurl.a is dynamically linked"; exit 1; \
   fi
 
+# RUN \
+#   set -e; \
+#   LIB=/opt/curl/lib/libcurl.so; \
+#   \
+#   # 1. Verify shared object header
+#   if ! readelf -h "$LIB" | grep -q "Type:.*DYN"; then \
+#     echo "\033[0;31mERROR: Not a shared library\033[0m"; exit 1; \
+#   fi; \
+#   \
+#   # 2. Check for interpreter
+#   INTERP=$(readelf -l "$LIB" | awk '/Requesting program interpreter/ {print $NF}'); \
+#   if [ -z "$INTERP" ]; then \
+#     echo "\033[1;34mOK: No ELF interpreter – static or libc-independent build\033[0m"; \
+#     # Accept musl libraries (NEEDED: libc.so)
+#     if readelf -d "$LIB" | grep -q "Shared library: \\[libc.so\\]"; then \
+#       echo "\033[1;34mOK: musl-linked '$LIB' found\033[0m"; \
+#     fi; \
+#     exit 0; \
+#   fi; \
+#   \
+#   # 3. If an interpreter exists, classify it
+#   if echo "$INTERP" | grep -q "ld-musl"; then \
+#     echo "OK: musl-linked\033[0m"; \
+#   elif echo "$INTERP" | grep -q "ld-linux"; then \
+#     echo "\033[0;31mERROR: glibc-linked\033[0m"; exit 1; \
+#   else \
+#     echo "\033[0;31mERROR: Unknown interpreter: $INTERP\033[0m"; exit 1; \
+#   fi
+
 RUN \
   /opt/curl/bin/curl https://github.com >/dev/null ; if [ $? -ne 0 ] ; then \
     echo "ERROR: curl is not functioning properly and cannot be used"; exit 1; \
+  fi
+
+
+#------------------------------------------------------------------------------
+### (6.1) Test
+#------------------------------------------------------------------------------
+
+FROM base_stage AS test_61_stage
+
+RUN apt-get -y update && apt-get install -y \
+  gettext \
+  autoconf \
+  automake \
+  libtool \
+  pkg-config
+
+COPY --from=zlib_stage    /opt/zlib /opt/my/test/zlib
+COPY --from=libpsl_stage  /opt/libpsl /opt/my/test/libpsl
+  
+COPY --from=libcurl_stage /opt/curl /opt/my/test/curl
+COPY --from=openssl_stage /opt/openssl /opt/my/test/openssl
+
+ENV LD_LIBRARY_PATH="/opt/my/test/openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
+
+WORKDIR /build/curl-test
+
+# Optional test run 
+RUN echo '#include <curl/curl.h> \n int main() { CURL *c = curl_easy_init(); return 0; }' > test.c
+ 
+RUN gcc -o test_dynamic test.c \
+  -I/opt/my/test/curl/include \
+  -I/opt/my/test/openssl/include \
+  -L/opt/my/test/zlib/lib \
+  -L/opt/my/test/libpsl/lib \
+  -Wl,-Bstatic -lz -lpsl \
+  -L/opt/my/test/curl/lib \
+  -L/opt/my/test/openssl/lib64 \
+  -Wl,-Bdynamic -lcurl -lssl -lcrypto \
+  -ldl -lpthread
+
+RUN \
+  if ! readelf -d /build/curl-test/test_dynamic >/dev/null 2>&1; then \
+    echo "ERROR: test_dynamic is NOT dynamically linked"; exit 1; \
+  fi
+
+RUN gcc -static -o test_static test.c \
+  -I/opt/my/test/curl/include \
+  -I/opt/my/test/openssl/include \
+  -L/opt/my/test/curl/lib \
+  -L/opt/my/test/libpsl/lib \
+  -L/opt/my/test/zlib/lib \
+  -L/opt/my/test/openssl/lib64 \
+  -lcurl -lpsl -lssl -lcrypto -lz -ldl -lpthread
+
+RUN \
+  if ldd /build/curl-test/test_static >/dev/null 2>&1; then \
+    echo "ERROR: test_static is dynamically linked"; exit 1; \
   fi
 
 
@@ -255,7 +413,8 @@ FROM build_stage AS git_stage
 
 RUN apt-get update -y && apt-get install -y \
   libcurl4-openssl-dev \
-  gettext
+  gettext \
+  autoconf automake libtool pkg-config
 
 WORKDIR /build
 
@@ -266,19 +425,45 @@ RUN \
   tar xzf "packed.tar.gz" -C "/build/git" --strip-components=1 && \
   rm -f "packed.tar.gz"
 
-COPY --from=zlib_stage    /build/zlib /build/zlib
 COPY --from=zlib_stage    /opt/zlib /opt/zlib
-COPY --from=openssl_stage /build/openssl /build/openssl
 COPY --from=openssl_stage /opt/openssl /opt/openssl
 COPY --from=libpsl_stage  /opt/libpsl /opt/libpsl
 COPY --from=libcurl_stage /opt/curl /opt/curl
 
 WORKDIR /build/git
 
-# For the `./configure`, `make`, and `make install` command
-ENV CC=musl-gcc
-ENV CFLAGS="-static -I/opt/zlib/include -I/opt/libpsl/include -I/opt/curl/include -I/build/openssl/include"
-ENV LDFLAGS="-static -L/opt/zlib/lib -L/opt/libpsl/lib -L/opt/curl/lib -L/opt/openssl/lib64"
+ENV LD_LIBRARY_PATH="/opt/openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
+ENV LD_LIBRARY_PATH="/opt/curl/lib:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
+
+# #Check if necessary
+# ENV PKG_CONFIG_PATH="/opt/zlib/lib/pkgconfig:${PKG_CONFIG_PATH}"
+# ENV PKG_CONFIG_PATH="/opt/openssl/lib64/pkgconfig:${PKG_CONFIG_PATH}"
+# ENV PKG_CONFIG_PATH="/opt/libpsl/lib/pkgconfig:${PKG_CONFIG_PATH}"
+# ENV PKG_CONFIG_PATH="/opt/curl/lib/pkgconfig:${PKG_CONFIG_PATH}"
+# 
+# RUN set -e; \
+#   if ! pkg-config --exists openssl; then \
+#     echo "ERROR: openssl.pc missing"; \
+# 	exit 1; \
+#   fi; \
+#   if ! pkg-config --exists zlib; then \
+#     echo "ERROR: zlib.pc missing"; \
+# 	exit 1; \
+#   fi; \
+#   if ! pkg-config --exists libpsl; then \
+#     echo "ERROR: libpsl.pc missing"; \
+# 	exit 1; \
+#   fi; \
+#   if ! pkg-config --exists libcurl; then \
+#     echo "ERROR: libcurl.pc missing"; \
+# 	exit 1; \
+#   fi; \
+#   echo "All pkg-config dependencies OK."
+# 
+# 
+# RUN pkg-config --libs --cflags libcurl
+
+RUN make configure
 
 RUN ./configure \
   --prefix=/opt/git \
@@ -286,58 +471,71 @@ RUN ./configure \
   --with-openssl=/opt/openssl \
   --without-expat \
   NO_TCLTK=YesPlease \
-  LIBS="-lz -lpsl -lcurl -lssl -lcrypto -lpthread -ldl"
+  CFLAGS="-O2 -g0 -I/opt/zlib/include -I/opt/libpsl/include" \
+  LDFLAGS="-L/opt/zlib/lib -L/opt/libpsl/lib -Wl,-Bstatic -lz -lpsl \
+           -Wl,-Bdynamic -L/opt/curl/lib -L/opt/openssl/lib64 -lcurl -lssl -lcrypto -ldl -lpthread"
 
 RUN make \
-  NO_INSTALL_HARDLINKS=YesPlease \
-  EXTLIBS="-lz -lpsl -lcurl -lssl -lcrypto -lpthread -ldl"
+  NO_INSTALL_HARDLINKS=YesPlease
 
 RUN make install \
   NO_INSTALL_HARDLINKS=YesPlease \
-  prefix=/opt/git \
-  EXTLIBS="-lz -lpsl -lcurl -lssl -lcrypto -lpthread -ldl"
+  prefix=/opt/git
 
-# If the later CA of the system is used, the use and copying of a local
-# CA can be omitted, as well as the use of an environment variable.
-# But `libcurl4-openssl-dev` or `ca-certificates` must be installed.
+RUN \
+  find /opt/git -type f -exec sh -c \
+    'file "$1" | grep -q ELF && strip "$1" || true' _ {} \; \
+  && find /opt/git -name "*.a" -delete
+
 RUN \
   mkdir -p /opt/git/ca && \
   cp /etc/ssl/certs/ca-certificates.crt /opt/git/ca/ca.pem
-
+ 
 ENV PATH="/opt/git/bin:$PATH"
 ENV GIT_PREFIX="/opt/git"
 ENV GIT_EXEC_PATH="/opt/git/libexec/git-core"
 ENV GIT_TEMPLATE_DIR="/opt/git/share/git-core/templates/"
-# Tell Git to use local CA bundle
 ENV GIT_SSL_CAINFO="/opt/git/ca/ca.pem"
+
+# allow Git to find libssl.so and libcrypto.so at runtime
+ENV LD_LIBRARY_PATH="/opt/openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
+ENV LD_LIBRARY_PATH="/opt/curl/lib:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 
 WORKDIR /build/git-test
 
-# Ensure ouput is static
+# Check that curl and OpenSSL is dynamically linked
 RUN \
-  if ldd /opt/git/bin/git >/dev/null 2>&1; then \
-    echo "ERROR: git is dynamically linked"; exit 1; \
+  if ! ldd /opt/git/libexec/git-core/git-remote-https | grep -q "libssl.so"; then \
+    echo "ERROR: Git is not dynamically linked with curl"; exit 1; \
   fi
+
+RUN \
+  if ! ldd /opt/git/libexec/git-core/git-remote-https | grep -q "libcrypto.so"; then \
+    echo "ERROR: Git is not dynamically linked with OpenSSL"; exit 1; \
+  fi 
 
 # Test run
-RUN \
-  git --version ; if [ $? -ne 0 ] ; then \
-    echo "ERROR:"; exit 1; \
-  fi
+RUN git --version || (echo "ERROR:"; exit 1)
 
 RUN \
-  git clone https://github.com/Chris82111/LibCsharpStaticGitCollection.git ; if [ $? -ne 0 ] ; then \
-    echo "ERROR:"; exit 1; \
-  fi
+  git clone https://github.com/Chris82111/LibCsharpStaticGitCollection.git || \
+  (echo "ERROR:"; exit 1)
+
 
 #------------------------------------------------------------------------------
-### (8.1) Test 1
+### (7.1) Test
 #------------------------------------------------------------------------------
 
-FROM base_stage
+FROM base_stage AS test_71_stage
 
 COPY --from=git_stage /opt/git /opt/my/test/git
+COPY --from=libcurl_stage /opt/curl /opt/my/test/curl
+COPY --from=openssl_stage /opt/openssl /opt/my/test/openssl
 
+ENV LD_LIBRARY_PATH="/opt/my/test/openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
+ENV LD_LIBRARY_PATH="/opt/my/test/curl/lib:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
+
+ENV PATH="/opt/my/test/curl/bin/:$PATH"
 ENV PATH="/opt/my/test/git/bin:$PATH"
 ENV GIT_PREFIX="/opt/my/test/git"
 ENV GIT_EXEC_PATH="/opt/my/test/git/libexec/git-core"
@@ -356,21 +554,32 @@ RUN \
     echo "ERROR: git clone ... command failed"; exit 1; \
   fi
 
+RUN \
+  if [ ! -d /build/git-test/LibCsharpStaticGitCollection ] ; then \
+    echo "ERROR: git clone ... failed"; exit 1; \
+  fi
+  
+RUN \
+  if [ ! -f /build/git-test/LibCsharpStaticGitCollection/README.md ] ; then \
+    echo "ERROR: git clone ... failed"; exit 1; \
+  fi
+
 
 #------------------------------------------------------------------------------
-### (8.2) Test 2
+### (7.2) Test
 #------------------------------------------------------------------------------
 
-FROM base_stage
+FROM base_stage AS test_72_stage
 
 COPY --from=git_stage /opt/git /opt/my/test/git
+COPY --from=libcurl_stage /opt/curl /opt/my/test/git/curl
+COPY --from=openssl_stage /opt/openssl /opt/my/test/git/openssl
+ADD setup-git-env.sh /opt/my/test/git
 
 WORKDIR /build/git-test
 
-ADD setup-git-env.sh /opt/my/test/git
-
 RUN bash -c "\
-    source /opt/my/test/git/setup-git-env.sh --no_extract && \
+    source /opt/my/test/git/setup-git-env.sh && \
     git --version || { \
         echo 'ERROR: git command failed'; \
         exit 1; \
@@ -378,21 +587,36 @@ RUN bash -c "\
 "
 
 RUN bash -c "\
-    source /opt/my/test/git/setup-git-env.sh --no_extract && \
+    source /opt/my/test/git/setup-git-env.sh && \
     git clone https://github.com/Chris82111/LibCsharpStaticGitCollection.git || { \
         echo 'ERROR: git clone ... command failed'; \
         exit 1; \
     }\
 "
 
+RUN ls /build/git-test/
+
+RUN \
+  if [ ! -d /build/git-test/LibCsharpStaticGitCollection ] ; then \
+    echo "ERROR: git clone ... failed"; exit 1; \
+  fi
+  
+RUN \
+  if [ ! -f /build/git-test/LibCsharpStaticGitCollection/README.md ] ; then \
+    echo "ERROR: git clone ... failed"; exit 1; \
+  fi
+
 
 #------------------------------------------------------------------------------
-### (9) Archive
+### (8) Archive
 #------------------------------------------------------------------------------
 
 FROM base_stage
 
 COPY --from=git_stage /opt/git /opt/git
+COPY --from=libcurl_stage /opt/curl /opt/git/curl
+COPY --from=openssl_stage /opt/openssl /opt/git/openssl
+ADD setup-git-env.sh /opt/git
 
 # The file `setup-git-env.sh` sets the following variables. 
 # You can use the script or do this yourself:
@@ -402,6 +626,8 @@ COPY --from=git_stage /opt/git /opt/git
 # export GIT_EXEC_PATH="/opt/git/libexec/git-core"
 # export GIT_TEMPLATE_DIR="/opt/git/share/git-core/templates/"
 # export GIT_SSL_CAINFO="/opt/git/ca/ca.pem"
+# export LD_LIBRARY_PATH="/opt/git/openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
+# export LD_LIBRARY_PATH="/opt/git/curl/lib:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 
 # WORKDIR /opt/git
 # RUN find . -type f -perm -111 -exec sh -c 'file "$0" | grep -q ELF && strip "$0"' {} \;

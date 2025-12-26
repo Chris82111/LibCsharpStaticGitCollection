@@ -1,4 +1,4 @@
-﻿namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleApp
+﻿namespace Chris82111.LibCsharpStaticGitCollection.TestConsoleAppNuGet
 {
     internal class Program
     {
@@ -8,6 +8,7 @@
 
             var color = "\x1b[1;49;33m";
             var reset = "\x1b[0m";
+
 
             Console.WriteLine($"{color}GitCommand             {reset}: {Local.GitCommand}");
             Console.WriteLine($"{color}GitCommandStaticLinux  {reset}: {Local.GitCommandStaticLinux}");
@@ -25,7 +26,7 @@
                 Console.WriteLine($"{color}Version  {reset}: {Local.GitVersion()}");
                 Console.WriteLine($"{color}Available{reset}: {Local.IsGitAvailable()}");
             }
-            catch { ; }
+            catch {; }
 
             try
             {
@@ -34,7 +35,7 @@
                 Console.WriteLine($"{color}Version  {reset}: {Local.GitVersion()}");
                 Console.WriteLine($"{color}Available{reset}: {Local.IsGitAvailable()}");
             }
-            catch { ; }
+            catch {; }
 
             Local.GitCommand = gitCommand;
 
@@ -45,7 +46,7 @@
                 Console.WriteLine($"{color}StandardOutput{reset}: {result.StandardOutput}");
                 Console.WriteLine($"{color}StandardError {reset}: {result.StandardError}");
             }
-            catch { ; }
+            catch {; }
         }
     }
 }

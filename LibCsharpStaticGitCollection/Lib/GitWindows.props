@@ -8,49 +8,72 @@
     <!-- Zip 256 hash -->  
     <GitWindowsExpectedHash>8f0a7bc389c0bccc9daf6107cff4efb176348e34b8d787f02a36679a5588e072</GitWindowsExpectedHash>
     
-    <!-- MinGit-2.51.2-64-bit.zip -->
-    <GitWindowsZipFile>$([System.IO.Path]::GetFileName('$(GitWindowsUrl)'))</GitWindowsZipFile>
-    
-    <!-- bin -->
-    <GitWindowsExtractDirectory>bin</GitWindowsExtractDirectory>
+    <!-- runtimes/win-x64/native -->
+    <GitWindowsRuntimeDirectory>$([System.IO.Path]::Combine('runtimes', 'win-x64', 'native'))</GitWindowsRuntimeDirectory>
     
     <!-- cmd/git.exe -->
-    <GitWindowsZipRelativeExecutable>$([System.IO.Path]::Combine('cmd', 'git.exe'))</GitWindowsZipRelativeExecutable>
+    <GitWindowsExecutableRelative>$([System.IO.Path]::Combine('cmd', 'git.exe'))</GitWindowsExecutableRelative>
+    
+    <!-- GitWindowsLib.cs -->
+    <GitWindowsLibFile>GitWindowsLib.cs</GitWindowsLibFile>
   
   </PropertyGroup>
   
   <PropertyGroup Label="GitWindowsHelper" >
     
-    <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib -->
-    <GitWindowsLibDirectory>$(MSBuildThisFileDirectory.TrimEnd('/').TrimEnd('\'))</GitWindowsLibDirectory>
+    <!-- The Runtime Identifier (RID) is set by `RuntimeIdentifier` tag in *.csproj file or via dash `r` or double-dash `runtime` parameter. -->
+    <RuntimeIdentifierLower>$([System.String]::Copy('$(RuntimeIdentifier)').ToLower())</RuntimeIdentifierLower>
     
-    <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib/MinGit-2.51.2-64-bit.zip -->
-    <GitWindowsZipFileFull>$([System.IO.Path]::Combine('$(GitWindowsLibDirectory)', '$(GitWindowsZipFile)'))</GitWindowsZipFileFull>
+    <!-- Checks if RID is "Any", ignoring case. -->
+    <IsAnyRid>$([System.String]::Equals('$(RuntimeIdentifierLower)','any'))</IsAnyRid>
+    
+    <!-- Checks if RID is empty. -->
+    <IsEmptyRid>$([System.String]::IsNullOrEmpty('$(RuntimeIdentifierLower)'))</IsEmptyRid>
+    
+    <!-- True if it starts with "win" and ends with "-x64", ignoring case. -->
+    <IsWindowsX64>$([System.Text.RegularExpressions.Regex]::IsMatch('$(RuntimeIdentifierLower)', '^win.*-x64$' ))</IsWindowsX64>
+    
+    <!-- Determines whether the runtime folder should be created in the output path based on the above conditions.  -->
+    <UseGitWindows Condition="'$(IsAnyRid)' == 'True' Or '$(IsEmptyRid)' == 'True' Or '$(IsWindowsX64)' == 'True'" >True</UseGitWindows>
+    <UseGitWindows Condition="'$(UseGitWindows)' == ''">False</UseGitWindows>
+    
+    
+    <!-- MinGit-2.51.2-64-bit.zip -->
+    <GitWindowsZipFile>$([System.IO.Path]::GetFileName('$(GitWindowsUrl)'))</GitWindowsZipFile>
+    
+    <!-- runtimes/win-x64/native/MinGit-2.51.2-64-bit.zip -->
+    <GitWindowsZipFileRelative>$([System.IO.Path]::Combine('$(GitWindowsRuntimeDirectory)', '$(GitWindowsZipFile)'))</GitWindowsZipFileRelative>
+    
+    <!-- -unchecked -->
+    <GitWindowsUncheckedExtension>-unchecked</GitWindowsUncheckedExtension>
     
     <!-- MinGit-2.51.2-64-bit.zip-unchecked -->
-    <GitWindowsZipFileUnchecked>'$(GitWindowsZipFile)-unchecked'))</GitWindowsZipFileUnchecked>
+    <GitWindowsZipFileUnchecked>$([System.String]::Concat('$(GitWindowsZipFile)', '$(GitWindowsUncheckedExtension)'))</GitWindowsZipFileUnchecked>
     
-    <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib/MinGit-2.51.2-64-bit.zip-unchecked -->
-    <GitWindowsZipFileUncheckedFull>$([System.IO.Path]::Combine('$(GitWindowsLibDirectory)', '$(GitWindowsZipFileUnchecked)'))</GitWindowsZipFileUncheckedFull>
+    <!-- runtimes/win-x64/native/MinGit-2.51.2-64-bit.zip-unchecked -->
+    <GitWindowsZipFileUncheckedRelative>$([System.String]::Concat('$(GitWindowsZipFileRelative)', '$(GitWindowsUncheckedExtension)'))</GitWindowsZipFileUncheckedRelative>
+  
+    <!-- C:/Users/Chris82111/source/repos/LibCsharpStaticGitCollection/LibCsharpStaticGitCollection/Lib -->
+    <GitWindowsLibDirectoryFull>$(MSBuildThisFileDirectory.TrimEnd('/').TrimEnd('\'))</GitWindowsLibDirectoryFull>
     
-    <!-- MinGit-2.51.2-64-bit -->
-    <GitWindowsBaseName>$([System.IO.Path]::GetFileNameWithoutExtension('$(GitWindowsZipFile)'))</GitWindowsBaseName>
+    <!-- Lib -->
+    <GitWindowsLibDirectory>$([System.String]::Copy('$(GitWindowsLibDirectoryFull)').Replace('$(MSBuildProjectDirectory)', '').Trim('/').Trim('\'))</GitWindowsLibDirectory>
+    
+    <!-- Lib/GitWindows.targets -->
+    <GitWindowsLibRelative>$([System.IO.Path]::Combine('$(GitWindowsLibDirectory)', '$(MSBuildThisFile)'))</GitWindowsLibRelative>
+    
+    <!-- Lib/GitWindowsLib.cs -->
+    <GitWindowsLibFileRelative>$([System.IO.Path]::Combine('$(GitWindowsLibDirectory)', '$(GitWindowsLibFile)'))</GitWindowsLibFileRelative>
   
   </PropertyGroup>
   
   <PropertyGroup Label="GitWindowsRelativeOutput" >
     
-    <!-- Lib -->
-    <GitWindowsRelativeOutputDirectory>$([System.String]::Copy('$(GitWindowsLibDirectory)').Replace('$(MSBuildProjectDirectory)', '').Trim('/').Trim('\'))</GitWindowsRelativeOutputDirectory>
+    <!-- runtimes/win-x64/native/MinGit-2.51.2-64-bit.zip -->
+    <GitWindowsOutputZipFileRelative>$(GitWindowsZipFileRelative)</GitWindowsOutputZipFileRelative>
     
-    <!-- Lib/MinGit-2.51.2-64-bit.zip -->
-    <GitWindowsRelativeOutputZipFile>$([System.IO.Path]::Combine('$(GitWindowsRelativeOutputDirectory)', '$(GitWindowsZipFile)'))</GitWindowsRelativeOutputZipFile>
-    
-    <!-- bin/MinGit-2.51.2-64-bit -->
-    <GitWindowsRelativeOutputZipDirectory>$([System.IO.Path]::Combine('$(GitWindowsExtractDirectory)', '$(GitWindowsBaseName)'))</GitWindowsRelativeOutputZipDirectory>
-    
-    <!-- bin/MinGit-2.51.2-64-bit/cmd/git.exe -->
-    <GitWindowsRelativeOutputExecutable>$([System.IO.Path]::Combine('$(GitWindowsRelativeOutputZipDirectory)', '$(GitWindowsZipRelativeExecutable)'))</GitWindowsRelativeOutputExecutable>
+    <!-- cmd/git.exe -->
+    <GitWindowsOutputExecutableRelative>$(GitWindowsExecutableRelative)</GitWindowsOutputExecutableRelative>
   
   </PropertyGroup>
 
