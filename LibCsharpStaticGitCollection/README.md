@@ -20,8 +20,8 @@ Please note the relevant third-party licenses:
   
 - OpenSSL:
   This product includes software developed by the OpenSSL Project for use in the OpenSSL Toolkit (http://www.openssl.org/)
-  License, OpenSSL: https://github.com/openssl/openssl?tab=Apache-2.0-1-ov-file#readme
-  SPDX: https://spdx.org/licenses/OpenSSL.html
+  License, Apache-2.0: https://github.com/openssl/openssl?tab=Apache-2.0-1-ov-file#readme
+  SPDX: https://spdx.org/licenses/Apache-2.0.html
   
 - libpsl:
   This product includes software developed by the libpsl Project. (https://github.com/rockdaboot/libpsl/tree/master)

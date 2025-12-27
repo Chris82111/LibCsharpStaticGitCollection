@@ -22,9 +22,9 @@ different terms. See the THIRD_PARTY_LICENSES file for details.
 4. OpenSSL  
    Project: http://www.openssl.org/  
    Repository:  https://github.com/openssl/openssl  
-   License: OpenSSL OR Apache-2.0  
+   License: Apache-2.0  
    License copied to this file: https://github.com/openssl/openssl?tab=Apache-2.0-1-ov-file#readme  
-   SPDX: https://spdx.org/licenses/OpenSSL.html  
+   SPDX: https://spdx.org/licenses/Apache-2.0.html
 5. libpsl  
    Repository: https://github.com/rockdaboot/libpsl  
    License: MIT  
