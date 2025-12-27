@@ -103,6 +103,9 @@ RUN make
 # Install
 RUN make install
 
+# License information
+RUN cp /build/zlib/LICENSE /opt/zlib/LICENSE
+
 # Ensure ouput is static
 RUN \
   if ldd /opt/zlib/lib/libz.a >/dev/null 2>&1; then \
@@ -143,6 +146,8 @@ RUN make AR="ar" RANLIB="ranlib"
 
 RUN make install_sw
 
+# License information
+RUN cp /build/openssl/LICENSE.txt /opt/openssl/LICENSE.txt
 
 # Ensure ouput is static
 RUN \
@@ -254,6 +259,9 @@ RUN make
 
 RUN make install
 
+# License information
+RUN cp /build/libpsl/LICENSE /opt/libpsl/LICENSE
+
 # Ensure ouput is static
 RUN \
   if ldd /opt/libpsl/lib/libpsl.a >/dev/null 2>&1; then \
@@ -312,6 +320,13 @@ RUN \
   if ldd /opt/curl/lib/libcurl.a >/dev/null 2>&1; then \
     echo "ERROR: libcurl.a is dynamically linked"; exit 1; \
   fi
+
+# License information
+RUN cp /build/curl/COPYING /opt/curl/COPYING
+
+RUN cp /opt/zlib/LICENSE /opt/curl/LICENSE-zlib
+RUN cp /opt/openssl/LICENSE.txt /opt/curl/LICENSE.txt-openssl
+RUN cp /opt/libpsl/LICENSE /opt/curl/LICENSE-libpsl
 
 # RUN \
 #   set -e; \
@@ -490,7 +505,13 @@ RUN \
 RUN \
   mkdir -p /opt/git/ca && \
   cp /etc/ssl/certs/ca-certificates.crt /opt/git/ca/ca.pem
- 
+
+# License information
+RUN cp /build/git/COPYING /opt/git/COPYING
+
+RUN cp /opt/zlib/LICENSE /opt/git/LICENSE-zlib
+RUN cp /opt/libpsl/LICENSE /opt/git/LICENSE-libpsl 
+
 ENV PATH="/opt/git/bin:$PATH"
 ENV GIT_PREFIX="/opt/git"
 ENV GIT_EXEC_PATH="/opt/git/libexec/git-core"
@@ -611,7 +632,7 @@ RUN \
 ### (8) Archive
 #------------------------------------------------------------------------------
 
-FROM base_stage
+FROM base_stage AS all
 
 COPY --from=git_stage /opt/git /opt/git
 COPY --from=libcurl_stage /opt/curl /opt/git/curl
