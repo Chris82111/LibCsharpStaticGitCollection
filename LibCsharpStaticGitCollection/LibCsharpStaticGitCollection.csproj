@@ -67,7 +67,7 @@ Acknowledgment
 </Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <PackageLicenseExpression>MIT AND (Zlib AND OpenSSL AND MIT AND curl AND GPL-2.0-only)</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT AND (Zlib AND Apache-2.0 AND MIT AND curl AND GPL-2.0-only)</PackageLicenseExpression>
     <Copyright>Copyright (c) Chris82111 2025</Copyright>
   </PropertyGroup>
   
