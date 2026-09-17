@@ -15,16 +15,41 @@
     Condition="!Exists('$(GitLinuxZipFileRelative)') And 'true' == '$(EnableStaticGitUseLinux)'" >
     
     <Message Text="Git Linux  : Running Docker using: $(DockerCmd)" Importance="high" />
+
+
+    <PropertyGroup>
+      <DockerNoCache Condition="Exists('$(GitLinuxDockerNoCacheFile)')">true</DockerNoCache>
+    </PropertyGroup>  
     
     <!-- Ensure directory exists -->
     <MakeDir
       Condition="!Exists('$(GitLinuxRuntimeDirectory)')"
       Directories="$(GitLinuxRuntimeDirectory)" />
-    
-    <!-- Build Docker image -->
+
+    <!-- If the build was not successfull the file will not be removed -->
+    <Delete
+      Files="$(GitLinuxDockerNoCacheFile)"
+      Condition="'true' == '$(DockerNoCache)'" />
+      
+    <!-- Build Docker image without cache -->
+    <Message
+      Text="Docker cache invalidation requested."
+      Condition="'true' == '$(DockerNoCache)'"
+      Importance="high" />
+    <Exec
+      Command="$(DockerCmd) build --no-cache --progress=plain -t staticgitbuildtempimage ."
+      WorkingDirectory="$(GitLinuxLibDirectory)"
+      Condition="'true' == '$(DockerNoCache)'" />
+
+    <!-- Build Docker image with cache -->
+    <Message
+      Text="Docker runs with cache."
+      Condition="'true' != '$(DockerNoCache)'"
+      Importance="high" />
     <Exec
       Command="$(DockerCmd) build --progress=plain -t staticgitbuildtempimage ."
-      WorkingDirectory="$(GitLinuxLibDirectory)" />
+      WorkingDirectory="$(GitLinuxLibDirectory)"
+      Condition="'true' != '$(DockerNoCache)'" />
     
     <!-- Export files from the Docker image -->
       <!-- Small cleanup -->
@@ -77,7 +102,14 @@
   
   <Target Name="GitLinuxCleanup" BeforeTargets="Clean" >
     <Exec Command="$(DockerCmd) rmi staticgitbuildtempimage" IgnoreExitCode="true" />
+    
     <!-- Exec Command="$(DockerCmd) system prune -f" IgnoreExitCode="true" /-->
+    
+    <WriteLinesToFile
+      File="$(GitLinuxDockerNoCacheFile)"
+      Lines="1"
+      Overwrite="true" />
+    
     <RemoveDir Directories="$(GitLinuxRuntimeDirectory)" />
     <!-- `GitLinux.tar.gz` is not removed; it is assumed that the exported file is error-free. -->
   </Target>
