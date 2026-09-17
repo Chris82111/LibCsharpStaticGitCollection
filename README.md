@@ -192,7 +192,7 @@ More about licensing: [licensing-a-repository](https://docs.github.com/en/reposi
 ### License Portable Git for Linux 
 
 - Build stage (3): Zlib ([zlib](https://zlib.net/zlib_license.html)), [SPDX](https://spdx.org/licenses/Zlib.html)
-- Build stage (4): Apache-2.0 ([OpenSSL](https://github.com/openssl/openssl?tab=Apache-2.0-1-ov-file#readme)), [SPDX](https://spdx.org/licenses/OpenSSL.html)
+- Build stage (4): Apache-2.0 ([OpenSSL](https://github.com/openssl/openssl?tab=Apache-2.0-1-ov-file#readme)), [SPDX](https://spdx.org/licenses/Apache-2.0.html)
 - Build stage (5): MIT ([libpsl](https://github.com/rockdaboot/libpsl/blob/master/LICENSE)), [SPDX](https://spdx.org/licenses/MIT.html)
 - Build stage (6): MIT/X derivative license ([libcurl](https://curl.se/docs/faq.html#License-Issues)), [SPDX](https://spdx.org/licenses/curl.html)
 - Build stage (7): GPL-2.0-only ([Git](https://git-scm.com/about#free-and-open-source)), [SPDX](https://spdx.org/licenses/GPL-2.0-only.html)
@@ -202,7 +202,7 @@ stateDiagram-v2
     state "zlib (3),
     (Zlib)" as BuildStage_3
     state "OpenSSL (4),
-    (OpenSSL OR Apache-2.0)" as BuildStage_4
+    (Apache-2.0)" as BuildStage_4
     state "libpsl (5),
     (MIT)" as BuildStage_5
     state "libcurl (6),
