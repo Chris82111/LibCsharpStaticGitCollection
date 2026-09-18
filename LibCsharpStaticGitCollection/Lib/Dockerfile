@@ -7,8 +7,22 @@
 # Build (optional `--no-cache`)
 # docker build --progress=plain -t tempimage .
 
+# Cleanup
+# docker rmi tempimage
+# docker system prune -f
+
 # Debug
+# docker build --progress=plain --target base_stage -t tempimage .
+# docker build --progress=plain --target build_stage -t tempimage .
+# docker build --progress=plain --target zlib_stage -t tempimage .
+# docker build --progress=plain --target openssl_stage -t tempimage .
+# docker build --progress=plain --target libpsl_stage -t tempimage .
+# docker build --progress=plain --target libcurl_stage -t tempimage .
+# docker build --progress=plain --target test_61_stage -t tempimage .
+# docker build --progress=plain --target git_stage -t tempimage .
+# docker build --progress=plain --target test_71_stage -t tempimage .
 # docker build --progress=plain --target test_72_stage -t tempimage .
+# docker build --progress=plain --target all -t tempimage .
 # docker run -it tempimage bash
 
 # Export
@@ -18,10 +32,6 @@
 
 # Extract
 # tar xzf GitLinux.tar.gz
-
-# Cleanup
-# docker rmi tempimage
-# docker system prune -f
 
 # sudo
 # sudo ln -s <yourPath>/git-static /opt/musl/git
@@ -144,7 +154,6 @@ RUN ./Configure \
   shared \
   linux-x86_64 \
   no-secure-memory \
-  no-afalgeng \
   --prefix=/opt/openssl \
   --openssldir=/opt/openssl
 
@@ -243,8 +252,12 @@ RUN \
 
 FROM build_stage AS libpsl_stage
 
-RUN apt-get update -y && apt-get install -y \
-  python3
+RUN export DEBIAN_FRONTEND=noninteractive && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends \
+    python3 \
+    pkg-config && \
+  rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
@@ -304,6 +317,7 @@ COPY --from=libpsl_stage  /opt/libpsl /opt/libpsl
 
 WORKDIR /build/curl
 
+ENV LD_LIBRARY_PATH=""
 ENV LD_LIBRARY_PATH="/opt/openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 
 ENV CPPFLAGS="-I/opt/openssl/include -I/opt/zlib/include -I/opt/libpsl/include"
@@ -389,6 +403,7 @@ COPY --from=libpsl_stage  /opt/libpsl /opt/my/test/libpsl
 COPY --from=libcurl_stage /opt/curl /opt/my/test/curl
 COPY --from=openssl_stage /opt/openssl /opt/my/test/openssl
 
+ENV LD_LIBRARY_PATH=""
 ENV LD_LIBRARY_PATH="/opt/my/test/openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 
 WORKDIR /build/curl-test
@@ -433,10 +448,19 @@ RUN \
 
 FROM build_stage AS git_stage
 
-RUN apt-get update -y && apt-get install -y \
-  libcurl4-openssl-dev \
-  gettext \
-  autoconf automake libtool pkg-config
+RUN export DEBIAN_FRONTEND=noninteractive && \
+  apt-get update -y && \
+  apt-get install -y --no-install-recommends \
+    libcurl4-openssl-dev \
+    ca-certificates \
+    gettext \
+    autoconf \
+    automake \
+    libtool \
+    pkg-config \
+    cargo \
+    rustc && \
+  rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
@@ -454,6 +478,7 @@ COPY --from=libcurl_stage /opt/curl /opt/curl
 
 WORKDIR /build/git
 
+ENV LD_LIBRARY_PATH=""
 ENV LD_LIBRARY_PATH="/opt/openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 ENV LD_LIBRARY_PATH="/opt/curl/lib:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 
@@ -560,6 +585,7 @@ COPY --from=git_stage /opt/git /opt/my/test/git
 COPY --from=libcurl_stage /opt/curl /opt/my/test/curl
 COPY --from=openssl_stage /opt/openssl /opt/my/test/openssl
 
+ENV LD_LIBRARY_PATH=""
 ENV LD_LIBRARY_PATH="/opt/my/test/openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 ENV LD_LIBRARY_PATH="/opt/my/test/curl/lib:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 

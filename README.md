@@ -2,7 +2,7 @@
 
 <div align="center">
 
-  [![Shields](https://img.shields.io/badge/.NET-8.0-5C2D91)](https://dotnet.microsoft.com/en-us/download/dotnet/8.0 "Download .NET 8.0")
+  [![Shields](https://img.shields.io/badge/.NET-10.0-5C2D91)](https://dotnet.microsoft.com/en-us/download/dotnet/10.0 "Download .NET 10.0")
   [![Visual Studio](https://img.shields.io/badge/IDE-Visual_Studio-5C2D91)](https://visualstudio.microsoft.com/ "Download Visual Studio")
   ![Linux x64](https://img.shields.io/badge/Linux-x64-009639)
   ![Windows x64](https://img.shields.io/badge/Windows-x64-0067C0)
