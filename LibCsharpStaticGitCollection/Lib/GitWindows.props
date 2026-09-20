@@ -69,7 +69,7 @@
   
   <PropertyGroup Label="GitWindowsRelativeOutput" >
     
-    <!-- runtimes/win-x64/native/MinGit-2.51.2-64-bit.zip -->
+    <!-- runtimes/win-x64/native/MinGit-X.XX.X-64-bit.zip -->
     <GitWindowsOutputZipFileRelative>$(GitWindowsZipFileRelative)</GitWindowsOutputZipFileRelative>
     
     <!-- cmd/git.exe -->
