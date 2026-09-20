@@ -23,6 +23,9 @@ This repository offers a convenient, cross-platform solution for using Git in a 
 
 Integration can be done either directly via [NuGet.org](https://www.nuget.org/) or by cloning the repository. This allows the package to be used flexibly either as a direct reference or to set up your own local NuGet package feed - ideal for controlled build environments and enterprise applications.
 
+> [!WARNING]
+> Please note that the greatest advantage of this project is also its greatest weakness. Since these are static versions of Git, there are no updates - not even security updates.
+
 ## Example
 
 This minimal example demonstrates how to use the package:
