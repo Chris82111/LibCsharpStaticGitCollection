@@ -67,6 +67,12 @@ There are various ways to disable individual functions during the build:
 4. A custom property can override the properties:  
    `dotnet build -c Debug -p:EnableStaticGitUseLinux=false -p:EnableStaticGitUseWindows=false`
 
+### Clean
+
+When the project is cleaned up, a `.docker-no-cache` file is created in the project folder `LibCsharpStaticGitCollection`. This file is deleted when the project is recompiled, but it ensures that the next Docker build process is performed without using the cache. However, the build is only performed if there is no packaged file in the `runtimes` folder. It is allowed to create or delete the file manually.
+
+- `dotnet clean`
+
 ### Update 
 
 The version of Git for Windows (MinGit) can be specified in the file [GitWindows.props](LibCsharpStaticGitCollection/Lib/GitWindows.props).  
@@ -132,9 +138,9 @@ Here is a list of common mistakes:
    
    Then log out and back in (or reboot) so the group takes effect.
 
-## NuGet
+### NuGet
 
-### Create a Local NuGet Package Feed
+#### Create a Local NuGet Package Feed
 
 The following command lists all packet sources:
 
@@ -144,21 +150,21 @@ dotnet nuget list source
 
 The following commands create a local NuGet package feed named `local`:
 
-#### Linux:
+##### Linux:
 
 ```shell
 mkdir -p ~/.NuGetPackages
 dotnet nuget add source ~/.NuGetPackages -n local
 ```
 
-#### Windows:
+##### Windows:
 
 ```powershell
 mkdir C:\NuGetPackages
 dotnet nuget add source C:\NuGetPackages\ -n local
 ```
 
-### Publishing Your Own Version
+#### Publishing Your Own Version
 
 The following command creates a NuGet package and transfers it to a local package feed named `local`:
 
@@ -169,14 +175,13 @@ The following command creates a NuGet package and transfers it to a local packag
    ```shell
    dotnet pack -c Release -o .
    ```
+4. Once you create a NuGet package it can be published to the local package feed:
 
-Once you create a NuGet package it can be published:
+   ```shell
+   dotnet nuget push Chris82111.LibCsharpStaticGitCollection.#Major.#Minor.#Patch.nupkg -s local
+   ```
 
-```shell
-dotnet nuget push Chris82111.LibCsharpStaticGitCollection.#Major.#Minor.#Patch.nupkg -s local
-```
-
-### Additional Commands
+#### Additional Commands
 
 Lists all versions of a NuGet package that are available in your configured package sources:
 
