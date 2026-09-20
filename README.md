@@ -136,20 +136,22 @@ Here is a list of common mistakes:
 
 ### Create a Local NuGet Package Feed
 
-The following commands create a local NuGet package feed named `local`:
+The following command lists all packet sources:
 
 ```shell
 dotnet nuget list source
 ```
 
-Linux:
+The following commands create a local NuGet package feed named `local`:
+
+#### Linux:
 
 ```shell
 mkdir -p ~/.NuGetPackages
 dotnet nuget add source ~/.NuGetPackages -n local
 ```
 
-Windows:
+#### Windows:
 
 ```powershell
 mkdir C:\NuGetPackages
@@ -160,24 +162,26 @@ dotnet nuget add source C:\NuGetPackages\ -n local
 
 The following command creates a NuGet package and transfers it to a local package feed named `local`:
 
-Change to the directory:
-
-```powershell
-cd C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection
-```
-
-Change the Version in the file `LibCsharpStaticGitCollection.csproj` in the tag `Project/PropertyGroup/Version`, #Major.#Minor.#Patch.
-
-Creating a NuGet package:
-
-```shell
-dotnet pack -c Debug -o .
-```
+1. In the repository, navigate to the `LibCsharpStaticGitCollection` project directory.
+2. Change the Version in the file `LibCsharpStaticGitCollection.csproj` in the tag `Project/PropertyGroup/Version`, #Major.#Minor.#Patch.
+3. Creating a NuGet package:
+   
+   ```shell
+   dotnet pack -c Release -o .
+   ```
 
 Once you create a NuGet package it can be published:
 
 ```shell
 dotnet nuget push Chris82111.LibCsharpStaticGitCollection.#Major.#Minor.#Patch.nupkg -s local
+```
+
+### Additional Commands
+
+Lists all versions of a NuGet package that are available in your configured package sources:
+
+```shell
+dotnet package search Chris82111.LibCsharpStaticGitCollection --exact-match
 ```
 
 ## License
