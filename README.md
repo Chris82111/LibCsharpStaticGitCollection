@@ -171,8 +171,8 @@ dotnet nuget add source C:\NuGetPackages\ -n local
 
 The following command creates a NuGet package and transfers it to a local package feed named `local`:
 
-1. In the repository, navigate to the `LibCsharpStaticGitCollection` project directory.
-2. Change the Version in the file `LibCsharpStaticGitCollection.csproj` in the tag `Project/PropertyGroup/Version`, #Major.#Minor.#Patch.
+1. Navigate to the repository directory.
+2. Change the Version in the file `LibCsharpStaticGitCollection/LibCsharpStaticGitCollection.csproj` in the tag `Project/PropertyGroup/Version`, #Major.#Minor.#Patch.
 3. Creating a NuGet package:
    
    ```shell
