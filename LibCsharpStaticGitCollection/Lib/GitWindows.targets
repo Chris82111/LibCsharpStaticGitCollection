@@ -39,7 +39,6 @@
       SourceUrl="$(GitWindowsUrl)"
       DestinationFolder="$(GitWindowsRuntimeDirectory)"
       DestinationFileName="$(GitWindowsZipFileUnchecked)" >
-      <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
     
     <GetFileHash
