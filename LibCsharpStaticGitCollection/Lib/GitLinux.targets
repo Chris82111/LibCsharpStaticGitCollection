@@ -1,14 +1,31 @@
 <Project>
   
+  <ItemGroup Condition="'true' == '$(EnableStaticGitUseLinux)' And 'true' == '$(UseGitLinux)'">
+    <None
+      Include="$(GitLinuxZipFileRelative)"
+      Pack="true"
+      PackagePath="$(GitLinuxRuntimeDirectory)" >
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  
+  <ItemGroup Condition="'true' == '$(EnableStaticGitUseLinux)' And 'false' == '$(UseGitLinux)'">
+    <None
+      Include="$(GitLinuxZipFileRelative)"
+      Pack="true"
+      PackagePath="$(GitLinuxRuntimeDirectory)" >
+    </None>
+  </ItemGroup>
+  
   <Target Name="GitLinuxPropertyGroup"
-    BeforeTargets="BeforeBuild" >
+    BeforeTargets="BeforeBuild;Pack" >
     
     <PropertyGroup>
     
     </PropertyGroup>
   
   </Target>
-    
+  
   <Target Name="GitLinuxBuild"
     AfterTargets="GitLinuxPropertyGroup"
     Outputs="$(GitLinuxZipFileRelative)"
@@ -16,15 +33,40 @@
     
     <Message Text="Git Linux  : Running Docker using: $(DockerCmd)" Importance="high" />
     
+    
+    <PropertyGroup>
+      <DockerNoCache Condition="Exists('$(GitLinuxDockerNoCacheFile)')">true</DockerNoCache>
+    </PropertyGroup>  
+    
     <!-- Ensure directory exists -->
     <MakeDir
       Condition="!Exists('$(GitLinuxRuntimeDirectory)')"
       Directories="$(GitLinuxRuntimeDirectory)" />
     
-    <!-- Build Docker image -->
+    <!-- Removes the file -->
+    <Delete
+      Files="$(GitLinuxDockerNoCacheFile)"
+      Condition="'true' == '$(DockerNoCache)'" />
+    
+    <!-- Build Docker image without cache -->
+    <Message
+      Text="Docker cache invalidation requested."
+      Condition="'true' == '$(DockerNoCache)'"
+      Importance="high" />
+    <Exec
+      Command="$(DockerCmd) build --no-cache --progress=plain -t staticgitbuildtempimage ."
+      WorkingDirectory="$(GitLinuxLibDirectory)"
+      Condition="'true' == '$(DockerNoCache)'" />
+    
+    <!-- Build Docker image with cache -->
+    <Message
+      Text="Docker runs with cache."
+      Condition="'true' != '$(DockerNoCache)'"
+      Importance="high" />
     <Exec
       Command="$(DockerCmd) build --progress=plain -t staticgitbuildtempimage ."
-      WorkingDirectory="$(GitLinuxLibDirectory)" />
+      WorkingDirectory="$(GitLinuxLibDirectory)"
+      Condition="'true' != '$(DockerNoCache)'" />
     
     <!-- Export files from the Docker image -->
       <!-- Small cleanup -->
@@ -35,51 +77,20 @@
       <Exec Command="$(DockerCmd) cp staticgitbuildexporttemp:$(GitLinuxDockerInternalZipFileFull) ./" WorkingDirectory="$(GitLinuxRuntimeDirectory)" />
       <!-- Small cleanup -->
       <Exec Command="$(DockerCmd) rm staticgitbuildexporttemp" />
-    
-  </Target>
-  
-  <Target Name="GitLinuxZipIncludeNugetAndLocal"
-    AfterTargets="GitLinuxBuild"
-    Condition="'true' == '$(EnableStaticGitUseLinux)' And 'true' == '$(UseGitLinux)'" >
-    
-    <Message Text="Git Linux  : Include directory NuGet and Local" Importance="High" />
-    
-    <ItemGroup>
-      
-      <None
-        Include="$(GitLinuxZipFileRelative)"
-        Pack="true"
-        PackagePath="$(GitLinuxZipFileRelative)" >
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-    
-    </ItemGroup>
-  
-  </Target>
-  
-  <Target Name="GitLinuxZipIncludeNuget"
-    AfterTargets="GitLinuxZipIncludeNugetAndLocal"
-    Condition="'true' == '$(EnableStaticGitUseLinux)' And 'false' == '$(UseGitLinux)'" >
-    
-    <Message Text="Git Linux  : Include directory NuGet only" Importance="High" />
-    
-    <ItemGroup>
-      
-      <None
-        Include="$(GitLinuxZipFileRelative)"
-        Pack="true"
-        PackagePath="$(GitLinuxZipFileRelative)" >
-      </None>
-    
-    </ItemGroup>
   
   </Target>
   
   <Target Name="GitLinuxCleanup" BeforeTargets="Clean" >
     <Exec Command="$(DockerCmd) rmi staticgitbuildtempimage" IgnoreExitCode="true" />
-    <!-- Exec Command="$(DockerCmd) system prune -f" IgnoreExitCode="true" /-->
-    <RemoveDir Directories="$(GitLinuxRuntimeDirectory)" />
-    <!-- `GitLinux.tar.gz` is not removed; it is assumed that the exported file is error-free. -->
+    
+    <WriteLinesToFile
+      File="$(GitLinuxDockerNoCacheFile)"
+      Lines="1"
+      Overwrite="true" />
+    
+    <!-- Do not remove, it is assumed that the exported file is error-free. -->
+    <!-- RemoveDir Directories="$(GitLinuxRuntimeDirectory)" /-->
+    
   </Target>
   
   <Target Name="GitLinuxGeneratePath" 

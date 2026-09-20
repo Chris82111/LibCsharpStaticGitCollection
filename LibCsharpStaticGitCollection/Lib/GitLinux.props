@@ -69,6 +69,8 @@
     <!-- Lib/GitLinuxLib.cs -->
     <GitLinuxLibFileRelative>$([System.IO.Path]::Combine('$(GitLinuxLibDirectory)', '$(GitLinuxLibFile)'))</GitLinuxLibFileRelative>
     
+    <!-- Help file for running the next command after a "clean" with the "no-cache" option -->
+    <GitLinuxDockerNoCacheFile>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '.docker-no-cache'))</GitLinuxDockerNoCacheFile>
     
     <DockerCmd Condition="'$(OS)' == 'Windows_NT'">wsl docker</DockerCmd>
     <DockerCmd Condition="'$(OS)' != 'Windows_NT'">docker</DockerCmd>

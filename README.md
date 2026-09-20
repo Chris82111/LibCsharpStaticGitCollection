@@ -2,7 +2,7 @@
 
 <div align="center">
 
-  [![Shields](https://img.shields.io/badge/.NET-8.0-5C2D91)](https://dotnet.microsoft.com/en-us/download/dotnet/8.0 "Download .NET 8.0")
+  [![Shields](https://img.shields.io/badge/.NET-10.0-5C2D91)](https://dotnet.microsoft.com/en-us/download/dotnet/10.0 "Download .NET 10.0")
   [![Visual Studio](https://img.shields.io/badge/IDE-Visual_Studio-5C2D91)](https://visualstudio.microsoft.com/ "Download Visual Studio")
   ![Linux x64](https://img.shields.io/badge/Linux-x64-009639)
   ![Windows x64](https://img.shields.io/badge/Windows-x64-0067C0)
@@ -22,6 +22,9 @@
 This repository offers a convenient, cross-platform solution for using Git in a portable form for Linux and Windows. As a powerful wrapper, it abstracts the complexity of Git integration and enables quick and easy integration into existing development environments.
 
 Integration can be done either directly via [NuGet.org](https://www.nuget.org/) or by cloning the repository. This allows the package to be used flexibly either as a direct reference or to set up your own local NuGet package feed - ideal for controlled build environments and enterprise applications.
+
+> [!WARNING]
+> Please note that the greatest advantage of this project is also its greatest weakness. Since these are static versions of Git, there are no updates - not even security updates.
 
 ## Example
 
@@ -66,6 +69,12 @@ There are various ways to disable individual functions during the build:
 3. An environment variable can override the properties
 4. A custom property can override the properties:  
    `dotnet build -c Debug -p:EnableStaticGitUseLinux=false -p:EnableStaticGitUseWindows=false`
+
+### Clean
+
+When the project is cleaned up, a `.docker-no-cache` file is created in the project folder `LibCsharpStaticGitCollection`. This file is deleted when the project is recompiled, but it ensures that the next Docker build process is performed without using the cache. However, the build is only performed if there is no packaged file in the `runtimes` folder. It is allowed to create or delete the file manually.
+
+- `dotnet clean`
 
 ### Update 
 
@@ -132,52 +141,55 @@ Here is a list of common mistakes:
    
    Then log out and back in (or reboot) so the group takes effect.
 
-## NuGet
+### NuGet
 
-### Create a Local NuGet Package Feed
+#### Create a Local NuGet Package Feed
 
-The following commands create a local NuGet package feed named `local`:
+The following command lists all packet sources:
 
 ```shell
 dotnet nuget list source
 ```
 
-Linux:
+The following commands create a local NuGet package feed named `local`:
+
+##### Linux:
 
 ```shell
 mkdir -p ~/.NuGetPackages
 dotnet nuget add source ~/.NuGetPackages -n local
 ```
 
-Windows:
+##### Windows:
 
 ```powershell
 mkdir C:\NuGetPackages
 dotnet nuget add source C:\NuGetPackages\ -n local
 ```
 
-### Publishing Your Own Version
+#### Publishing Your Own Version
 
 The following command creates a NuGet package and transfers it to a local package feed named `local`:
 
-Change to the directory:
+1. In the repository, navigate to the `LibCsharpStaticGitCollection` project directory.
+2. Change the Version in the file `LibCsharpStaticGitCollection.csproj` in the tag `Project/PropertyGroup/Version`, #Major.#Minor.#Patch.
+3. Creating a NuGet package:
+   
+   ```shell
+   dotnet pack -c Release -o .
+   ```
+4. Once you create a NuGet package it can be published to the local package feed:
 
-```powershell
-cd C:\Users\Chris82111\source\repos\LibCsharpStaticGitCollection\LibCsharpStaticGitCollection
-```
+   ```shell
+   dotnet nuget push Chris82111.LibCsharpStaticGitCollection.#Major.#Minor.#Patch.nupkg -s local
+   ```
 
-Change the Version in the file `LibCsharpStaticGitCollection.csproj` in the tag `Project/PropertyGroup/Version`, #Major.#Minor.#Patch.
+#### Additional Commands
 
-Creating a NuGet package:
+Lists all versions of a NuGet package that are available in your configured package sources:
 
 ```shell
-dotnet pack -c Debug -o .
-```
-
-Once you create a NuGet package it can be published:
-
-```shell
-dotnet nuget push Chris82111.LibCsharpStaticGitCollection.#Major.#Minor.#Patch.nupkg -s local
+dotnet package search Chris82111.LibCsharpStaticGitCollection --exact-match
 ```
 
 ## License

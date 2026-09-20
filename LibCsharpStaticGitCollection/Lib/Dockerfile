@@ -7,8 +7,22 @@
 # Build (optional `--no-cache`)
 # docker build --progress=plain -t tempimage .
 
+# Cleanup
+# docker rmi tempimage
+# docker system prune -f
+
 # Debug
+# docker build --progress=plain --target base_stage -t tempimage .
+# docker build --progress=plain --target build_stage -t tempimage .
+# docker build --progress=plain --target zlib_stage -t tempimage .
+# docker build --progress=plain --target openssl_stage -t tempimage .
+# docker build --progress=plain --target libpsl_stage -t tempimage .
+# docker build --progress=plain --target libcurl_stage -t tempimage .
+# docker build --progress=plain --target test_61_stage -t tempimage .
+# docker build --progress=plain --target git_stage -t tempimage .
+# docker build --progress=plain --target test_71_stage -t tempimage .
 # docker build --progress=plain --target test_72_stage -t tempimage .
+# docker build --progress=plain --target all -t tempimage .
 # docker run -it tempimage bash
 
 # Export
@@ -18,10 +32,6 @@
 
 # Extract
 # tar xzf GitLinux.tar.gz
-
-# Cleanup
-# docker rmi tempimage
-# docker system prune -f
 
 # sudo
 # sudo ln -s <yourPath>/git-static /opt/musl/git
@@ -45,28 +55,35 @@ FROM ubuntu:24.04 AS base_stage
 
 # (3) Build zlib
 # Update: https://zlib.net/
-ENV zlibUrl="https://zlib.net/zlib-1.3.1.tar.gz"
-ENV zlibSha256="9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23"
+ENV zlibUrl="https://zlib.net/zlib-1.3.2.tar.gz"
+ENV zlibSha256="bb329a0a2cd0274d05519d61c667c062e06990d72e125ee2dfa8de64f0119d16"
 
 # (4) Build OpenSSL
 # Update: https://github.com/openssl/openssl/releases
-ENV openSslUrl="https://github.com/openssl/openssl/releases/download/openssl-3.5.4/openssl-3.5.4.tar.gz"
-ENV openSslSha256="967311f84955316969bdb1d8d4b983718ef42338639c621ec4c34fddef355e99"
+ENV openSslUrl="https://github.com/openssl/openssl/releases/download/openssl-4.0.2/openssl-4.0.2.tar.gz"
+ENV openSslSha256="736b467530f916737b7031310ccb21d8218c6229e61e8e160cd1d3458cd543a8"
 
 # (5) Build libpsl
 # Update: https://www.linuxfromscratch.org/blfs/view/svn/basicnet/libpsl.html
-ENV libpslUrl="https://github.com/rockdaboot/libpsl/releases/download/0.21.5/libpsl-0.21.5.tar.gz"
-ENV libpslSha256="1dcc9ceae8b128f3c0b3f654decd0e1e891afc6ff81098f227ef260449dae208"
+# Update: https://github.com/rockdaboot/libpsl/releases
+ENV libpslUrl="https://github.com/rockdaboot/libpsl/releases/download/0.23.3/libpsl-0.23.3.tar.gz"
+ENV libpslSha256="93941f85a1e7bd593fa94f299233cb5dfc91cd144fd9a78a6ceb75001c5b03be"
 
 # (6) Build libcurl (Git HTTPS support)
 # Update: https://curl.se/download.html
-ENV libcurlUrl="https://curl.se/download/curl-8.17.0.tar.gz"
-ENV libcurlSha256="e8e74cdeefe5fb78b3ae6e90cd542babf788fa9480029cfcee6fd9ced42b7910"
+# Update: https://github.com/curl/curl/releases
+ENV libcurlUrl="https://curl.se/download/curl-8.22.0.tar.gz"
+ENV libcurlSha256="d54dd598bf05927a726deb38df31c6a255ba83ff1de57c5d1464dac3ed8f44a1"
 
 # (7) Build Git
 # Update: https://git-scm.com/install/source
-ENV gitUrl="https://www.kernel.org/pub/software/scm/git/git-2.51.2.tar.gz"
-ENV gitSha256="9b44c2b337ec838e10aad42439d390963904449710d30c9e7e4ba449f45da98f"
+# signatures:
+#   https://www.kernel.org/category/signatures.html
+#   https://gitlab.com/gitlab-org/git/-/tags/junio-gpg-pub
+#   gzip -dk *.tar.gz
+#   gpg --verify *.tar.sign *.tar
+ENV gitUrl="https://www.kernel.org/pub/software/scm/git/git-2.55.0.tar.gz"
+ENV gitSha256="0842dc384a23ac33ba3e570c4f3a8ded85963ee4713b1cd21153c3db41813d1e"
 
 
 #------------------------------------------------------------------------------
@@ -137,7 +154,6 @@ RUN ./Configure \
   shared \
   linux-x86_64 \
   no-secure-memory \
-  no-afalgeng \
   --prefix=/opt/openssl \
   --openssldir=/opt/openssl
 
@@ -236,8 +252,12 @@ RUN \
 
 FROM build_stage AS libpsl_stage
 
-RUN apt-get update -y && apt-get install -y \
-  python3
+RUN export DEBIAN_FRONTEND=noninteractive && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends \
+    python3 \
+    pkg-config && \
+  rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
@@ -297,6 +317,7 @@ COPY --from=libpsl_stage  /opt/libpsl /opt/libpsl
 
 WORKDIR /build/curl
 
+ENV LD_LIBRARY_PATH=""
 ENV LD_LIBRARY_PATH="/opt/openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 
 ENV CPPFLAGS="-I/opt/openssl/include -I/opt/zlib/include -I/opt/libpsl/include"
@@ -382,6 +403,7 @@ COPY --from=libpsl_stage  /opt/libpsl /opt/my/test/libpsl
 COPY --from=libcurl_stage /opt/curl /opt/my/test/curl
 COPY --from=openssl_stage /opt/openssl /opt/my/test/openssl
 
+ENV LD_LIBRARY_PATH=""
 ENV LD_LIBRARY_PATH="/opt/my/test/openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 
 WORKDIR /build/curl-test
@@ -426,10 +448,19 @@ RUN \
 
 FROM build_stage AS git_stage
 
-RUN apt-get update -y && apt-get install -y \
-  libcurl4-openssl-dev \
-  gettext \
-  autoconf automake libtool pkg-config
+RUN export DEBIAN_FRONTEND=noninteractive && \
+  apt-get update -y && \
+  apt-get install -y --no-install-recommends \
+    libcurl4-openssl-dev \
+    ca-certificates \
+    gettext \
+    autoconf \
+    automake \
+    libtool \
+    pkg-config \
+    cargo \
+    rustc && \
+  rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
@@ -447,6 +478,7 @@ COPY --from=libcurl_stage /opt/curl /opt/curl
 
 WORKDIR /build/git
 
+ENV LD_LIBRARY_PATH=""
 ENV LD_LIBRARY_PATH="/opt/openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 ENV LD_LIBRARY_PATH="/opt/curl/lib:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 
@@ -553,6 +585,7 @@ COPY --from=git_stage /opt/git /opt/my/test/git
 COPY --from=libcurl_stage /opt/curl /opt/my/test/curl
 COPY --from=openssl_stage /opt/openssl /opt/my/test/openssl
 
+ENV LD_LIBRARY_PATH=""
 ENV LD_LIBRARY_PATH="/opt/my/test/openssl/lib64:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 ENV LD_LIBRARY_PATH="/opt/my/test/curl/lib:${LD_LIBRARY_PATH:+${LD_LIBRARY_PATH}}"
 

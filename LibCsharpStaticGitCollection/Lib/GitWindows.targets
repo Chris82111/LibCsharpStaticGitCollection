@@ -1,7 +1,24 @@
 <Project>
   
+  <ItemGroup Condition="'true' == '$(EnableStaticGitUseWindows)' And 'true' == '$(UseGitWindows)'">
+    <None
+      Include="$(GitWindowsZipFileRelative)"
+      Pack="true"
+      PackagePath="$(GitWindowsRuntimeDirectory)" >
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  
+  <ItemGroup Condition="'true' == '$(EnableStaticGitUseWindows)' And 'false' == '$(UseGitWindows)'">
+    <None
+      Include="$(GitWindowsZipFileRelative)"
+      Pack="true"
+      PackagePath="$(GitWindowsRuntimeDirectory)" >
+    </None>
+  </ItemGroup>
+  
   <Target Name="GitWindowsPropertyGroup"
-    BeforeTargets="BeforeBuild" >
+    BeforeTargets="BeforeBuild;Pack" >
     
     <PropertyGroup>
     
@@ -22,7 +39,6 @@
       SourceUrl="$(GitWindowsUrl)"
       DestinationFolder="$(GitWindowsRuntimeDirectory)"
       DestinationFileName="$(GitWindowsZipFileUnchecked)" >
-      <Output TaskParameter="DownloadedFile" ItemName="Content" />
     </DownloadFile>
     
     <GetFileHash
@@ -43,46 +59,11 @@
   
   </Target>
   
-  <Target Name="GitWindowsZipIncludeNugetAndLocal"
-    AfterTargets="GitWindowsZipDownload"
-    Condition="'true' == '$(EnableStaticGitUseWindows)' And 'true' == '$(UseGitWindows)'" >
-    
-    <Message Text="Git Windows: Include directory NuGet and Local" Importance="High" />
-    
-    <ItemGroup>
-      
-      <None
-        Include="$(GitWindowsZipFileRelative)"
-        Pack="true"
-        PackagePath="$(GitWindowsRuntimeDirectory)" >
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-    
-    </ItemGroup>
-  
-  </Target>
-  
-  <Target Name="GitWindowsZipIncludeNuget"
-    AfterTargets="GitWindowsZipIncludeNugetAndLocal"
-    Condition="'true' == '$(EnableStaticGitUseWindows)' And 'false' == '$(UseGitWindows)'" >
-    
-    <Message Text="Git Windows: Include directory NuGet only" Importance="High" />
-    
-    <ItemGroup>
-      
-      <None
-        Include="$(GitWindowsZipFileRelative)"
-        Pack="true"
-        PackagePath="$(GitWindowsRuntimeDirectory)" >
-      </None>
-    
-    </ItemGroup>
-  
-  </Target>
-  
   <Target Name="GitWindowsCleanup" BeforeTargets="Clean" >
-    <RemoveDir Directories="$(GitWindowsRuntimeDirectory)" ContinueOnError="WarnAndContinue" />
-    <!-- `MinGit-2.51.2-64-bit.zip` is not removed; it is assumed that the downloaded file is error-free. -->
+    
+    <!-- Do not remove, it is assumed that the exported file is error-free. -->
+    <!-- RemoveDir Directories="$(GitWindowsRuntimeDirectory)" ContinueOnError="WarnAndContinue" /-->
+  
   </Target>
   
   <Target Name="GitWindowsGeneratePath"
