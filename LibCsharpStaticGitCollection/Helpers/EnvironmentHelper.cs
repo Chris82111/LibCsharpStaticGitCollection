@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Reflection.Metadata;
+using System.Runtime.InteropServices;
 
 namespace Chris82111.LibCsharpStaticGitCollection.Helpers
 {
@@ -17,7 +19,21 @@ namespace Chris82111.LibCsharpStaticGitCollection.Helpers
             return false == existsAndNotEmpty;
         }
 
-        public static void SetToVariable(string variable, string value)
+        public static void AddToVariable(string variable, string value)
+        {
+            Environment.SetEnvironmentVariable(
+                variable,
+                CombineVariable(variable, value));
+        }
+
+        public static void SetToPahtVariable(string newDirectory)
+        {
+            Environment.SetEnvironmentVariable(
+                "PATH",
+                CombineVariable("PATH", newDirectory));
+        }
+
+        public static string CombineVariable(string variable, string value)
         {
             if (string.IsNullOrEmpty(variable))
             {
@@ -29,32 +45,33 @@ namespace Chris82111.LibCsharpStaticGitCollection.Helpers
                 throw new NullReferenceException($"Variable {nameof(value)} must not be null or empty");
             }
 
-            string? content = Environment.GetEnvironmentVariable(variable);
+            var content = Environment.GetEnvironmentVariable(variable);
 
             content = string.IsNullOrEmpty(content)
                 ? value
                 : value + PathEnvironmentSeparator + content;
 
-            Environment.SetEnvironmentVariable(variable, content);
-        }
-
-        public static void SetToPahtVariable(string newDirectory)
-        {
-            string currentPath = Environment.GetEnvironmentVariable("PATH") ?? "";
-
-            Environment.SetEnvironmentVariable("PATH", newDirectory + PathEnvironmentSeparator + currentPath);
+            return content;
         }
 
         public static bool IsProgramAvailable(string? programName)
         {
+
             if (string.IsNullOrEmpty(programName))
             {
                 return false;
             }
 
-            if (File.Exists(programName))
+            var path = Path.GetDirectoryName(programName);
+            if (false == string.IsNullOrEmpty(path))
             {
-                return true;
+                path = Path.GetFullPath(ReplacePathSeparatorsOnly(path));
+
+                programName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    ? Path.GetFileNameWithoutExtension(programName)
+                    : Path.GetFileName(programName);
+
+                path = CombineVariable("PATH", path);
             }
 
             var process = new Process
@@ -69,6 +86,11 @@ namespace Chris82111.LibCsharpStaticGitCollection.Helpers
                 }
             };
 
+            if (null != path)
+            {
+                process.StartInfo.Environment["PATH"] = path;
+            }
+
             process.Start();
 
             string output = process.StandardOutput.ReadToEnd();
@@ -78,11 +100,23 @@ namespace Chris82111.LibCsharpStaticGitCollection.Helpers
             return 0 == process.ExitCode && false == string.IsNullOrEmpty(output);
         }
 
-        public static async Task<bool> IsProgramAvailableAsync(string programName)
+        public static async Task<bool> IsProgramAvailableAsync(string? programName)
         {
-            if (File.Exists(programName))
+            if (string.IsNullOrEmpty(programName))
             {
-                return true;
+                return false;
+            }
+
+            var path = Path.GetDirectoryName(programName);
+            if (false == string.IsNullOrEmpty(path))
+            {
+                path = Path.GetFullPath(ReplacePathSeparatorsOnly(path));
+
+                programName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    ? Path.GetFileNameWithoutExtension(programName)
+                    : Path.GetFileName(programName);
+               
+                path = CombineVariable("PATH", path);
             }
 
             var process = new Process
@@ -97,6 +131,11 @@ namespace Chris82111.LibCsharpStaticGitCollection.Helpers
                 },
                 EnableRaisingEvents = true
             };
+
+            if(null != path)
+            {
+                process.StartInfo.Environment["PATH"] = path;
+            }
 
             process.Start();
 
