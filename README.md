@@ -33,7 +33,7 @@ This minimal example demonstrates how to use the package:
 ```c#
 static void Main(string[] args)
 {
-    Local.ExtractArchives().Wait();
+    Local.ExtractArchive();
 
     Console.WriteLine($"Version   : {Local.GitVersion()}");
     Console.WriteLine($"Available : {Local.IsGitAvailable()}");
@@ -178,10 +178,17 @@ The following command creates a NuGet package and transfers it to a local packag
    ```shell
    dotnet pack -c Release -o .
    ```
+
 4. Once you create a NuGet package it can be published to the local package feed:
 
    ```shell
    dotnet nuget push Chris82111.LibCsharpStaticGitCollection.#Major.#Minor.#Patch.nupkg -s local
+   ```
+   
+5. Clear the NuGet caches
+
+   ```shell
+   dotnet nuget locals all --clear
    ```
 
 #### Additional Commands
