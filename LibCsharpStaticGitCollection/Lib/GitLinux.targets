@@ -94,7 +94,7 @@
   </Target>
   
   <Target Name="GitLinuxGeneratePath" 
-    BeforeTargets="BeforeCompile"
+    BeforeTargets="BeforeCompile;Pack"
     Inputs="$(GitLinuxLibRelative)"
     Outputs="$(GitLinuxLibFileRelative)" >
     

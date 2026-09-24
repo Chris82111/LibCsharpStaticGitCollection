@@ -24,6 +24,11 @@ in a portable form for Linux and Windows. As a powerful wrapper, it abstracts
 the complexity of Git integration and enables quick and easy integration into
 existing development environments.
 
+Supports:
+
+- Windows x64
+- Linux x64
+
 Integration can be done either directly via NuGet.org or by cloning the
 repository. This allows the package to be used flexibly either as a direct
 reference or to set up your own local NuGet package feed - ideal for
@@ -67,8 +72,9 @@ Acknowledgment
 </Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <PackageLicenseExpression>MIT AND (Zlib AND Apache-2.0 AND MIT AND curl AND GPL-2.0-only)</PackageLicenseExpression>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Copyright>Copyright (c) Chris82111 2025</Copyright>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   
   <ItemGroup>

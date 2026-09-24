@@ -35,32 +35,43 @@ namespace Chris82111.LibCsharpStaticGitCollection
         public static string? GitCommandStaticLinux { get; private set; } = null;
 
         /// <summary>
-        /// <inheritdoc cref="ExtractArchives(string, string)" />
+        /// Resets the properties to their initial values.
+        /// </summary>
+        public static void Reset()
+        {
+            GitCommand = "git";
+            GitCommandStaticWindows = null;
+            GitCommandStaticLinux = null;
+        }
+
+        #region Extract Archives
+
+        /// <summary>
+        /// <inheritdoc cref="ExtractArchiveAsync(string, string)" />
         /// </summary>
         /// <returns></returns>
-        public static async Task ExtractArchives()
+        public static void ExtractArchive()
         {
-            await ExtractArchives(null, null);
+            ExtractArchiveAsync(null, null).GetAwaiter().GetResult();
         }
 
         /// <summary>
-        /// <inheritdoc cref="ExtractArchives(string, string)" />
+        /// <inheritdoc cref="ExtractArchiveAsync(string, string)" />
         /// </summary>
-        /// <param name="archivePath"><inheritdoc cref="ExtractArchives(string, string)" path="//param[@name='archivePath']/node()" /></param>
         /// <returns></returns>
-        public static async Task ExtractArchivesFrom(string archivePath)
+        public static async Task ExtractArchiveAsync()
         {
-            await ExtractArchives(archivePath, null);
+            await ExtractArchiveAsync(null, null);
         }
 
         /// <summary>
-        /// <inheritdoc cref="ExtractArchives(string, string)" />
+        /// <inheritdoc cref="ExtractArchiveAsync(string, string)" />
         /// </summary>
-        /// <param name="destination"><inheritdoc cref="ExtractArchives(string, string)" path="//param[@name='destination']/node()" /></param>
-        /// <returns></returns>
-        public static async Task ExtractArchivesTo(string destination)
+        /// <param name="archivePath"><inheritdoc cref="ExtractArchiveAsync(string, string)" path="//param[@name='archivePath']/node()" /></param>
+        /// <param name="destination"><inheritdoc cref="ExtractArchiveAsync(string, string)" path="//param[@name='destination']/node()" /></param>
+        public static void ExtractArchive(string? archivePath, string? destination)
         {
-            await ExtractArchives(null, destination);
+            ExtractArchiveAsync(archivePath, destination).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -76,7 +87,7 @@ namespace Chris82111.LibCsharpStaticGitCollection
         /// <returns></returns>
         /// <exception cref="FileNotFoundException"></exception>
         /// <exception cref="Exception"></exception>
-        public static async Task ExtractArchives(string? archivePath, string? destination)
+        public static async Task ExtractArchiveAsync(string? archivePath, string? destination)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -198,12 +209,14 @@ namespace Chris82111.LibCsharpStaticGitCollection
                 Environment.SetEnvironmentVariable("GIT_TEMPLATE_DIR", Path.Combine(output, "share", "git-core", "templates"));
                 Environment.SetEnvironmentVariable("GIT_SSL_CAINFO", Path.Combine(output, "ca", "ca.pem"));
 
-                EnvironmentHelper.SetToVariable("LD_LIBRARY_PATH", Path.Combine(output, "openssl", "lib64"));
-                EnvironmentHelper.SetToVariable("LD_LIBRARY_PATH", Path.Combine(output, "curl", "lib"));
+                EnvironmentHelper.AddToVariable("LD_LIBRARY_PATH", Path.Combine(output, "openssl", "lib64"));
+                EnvironmentHelper.AddToVariable("LD_LIBRARY_PATH", Path.Combine(output, "curl", "lib"));
             }
 
             return;
         }
+
+        #endregion
 
         /// <summary>
         /// Checks whether Git is available
@@ -336,7 +349,7 @@ namespace Chris82111.LibCsharpStaticGitCollection
         /// <returns>Git version</returns>
         public static async Task<string> GitVersionAsync()
         {
-            return ( await CallGitAsync("-v") ).StandardOutput;
+            return ( await CallGitAsync("-v") ).StandardOutput.Replace("\r", null).Replace("\n", null);
         }
     }
 }

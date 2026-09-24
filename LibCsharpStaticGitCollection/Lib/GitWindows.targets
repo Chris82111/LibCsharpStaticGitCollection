@@ -67,7 +67,7 @@
   </Target>
   
   <Target Name="GitWindowsGeneratePath"
-    BeforeTargets="BeforeCompile"
+    BeforeTargets="BeforeCompile;Pack"
     Inputs="$(GitWindowsLibRelative)"
     Outputs="$(GitWindowsLibFileRelative)" >
     
